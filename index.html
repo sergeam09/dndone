@@ -4088,23 +4088,17 @@ let html = '<div class="spell-slots-grid">';
 for (let i = 0; i < 9; i++) {
 const total = slots[i];
 if (total === 0) continue;
-const usedKey = i + 1;
-const used = char.spell_slots_used[usedKey] || 0;
-html += `<div class="slot-box">
-<label>NIVEL ${i + 1}</label>
-<div class="slot-pips">`;
-for (let p = 0; p < total; p++) {
-const isUsed = p < used;
-html += `<div class="slot-pip ${isUsed ? 'used' : 'available'}"
-onclick="toggleSlot(${usedKey}, ${p}, ${total})" title="${isUsed ? 'Usado' : 'Disponible'}"></div>`;
+var usedKey = i + 1;
+var used = char.spell_slots_used[usedKey] || 0;
+html += '<div class="slot-box"><label>NIVEL ' + (i+1) + '</label><div class="slot-pips">';
+for (var p = 0; p < total; p++) {
+var isUsed = p < used;
+html += '<div class="slot-pip ' + (isUsed ? 'used' : 'available') + '" onclick="toggleSlot(' + usedKey + ',' + p + ',' + total + ')" title="' + (isUsed ? 'Usado' : 'Disponible') + '"></div>';
 }
-html += `</div><div style="font-size:0.75rem;color:var(--text3);margin-top:4px">${total - used}/${total}</div>
-</div>`;
+html += '</div><div style="font-size:0.75rem;color:var(--text3);margin-top:4px">' + (total-used) + '/' + total + '</div></div>';
 }
 html += '</div>';
-html += `<div style="text-align:right;margin-top:4px;">
-<button class="btn-sm" onclick="resetSlots()">↺ Descanso largo</button>
-</div>`;
+html += '<div style="text-align:right;margin-top:4px;"><button class="btn-sm" onclick="resetSlots()">↺ Descanso largo</button></div>';
 container.innerHTML = html;
 }
 function toggleSlot(level, pipIdx, total) {
@@ -4295,57 +4289,57 @@ function rollCustomAttack(i) {
 const a = char.custom_attacks[i];
 const d20 = Math.ceil(Math.random() * 20);
 const total = d20 + a.bonus;
-const dmgRoll = rollFormula(a.dmg);
+var dmgRoll = rollFormula(a.dmg);
 showDiceResult(
-`${a.name}: Ataque`,
+a.name + ': Ataque',
 total,
-`d20(${d20}) ${fmtMod(a.bonus)} | Daño: ${dmgRoll.detail} = ${dmgRoll.total}`
+'d20(' + d20 + ') ' + fmtMod(a.bonus) + ' | Daño: ' + dmgRoll.detail + ' = ' + dmgRoll.total
 );
 }
-const diceHistory = [];
+var diceHistory = [];
 function rollDie(sides) {
-const result = Math.ceil(Math.random() * sides);
+var result = Math.ceil(Math.random() * sides);
 showDiceResult('d' + sides, result, 'd' + sides);
 return result;
 }
 function rollFormula(formula) {
-const match = formula.match(/(\d*)d(\d+)([+-]\d+)?/i);
+var match = formula.match(/(\d*)d(\d+)([+-]\d+)?/i);
 if (!match) {
-const n = parseInt(formula);
+var n = parseInt(formula);
 return { total: n || 0, detail: formula };
 }
-const count  = parseInt(match[1]) || 1;
-const sides  = parseInt(match[2]);
-const mod    = parseInt(match[3]) || 0;
-let rolls = [];
-for (let i = 0; i < count; i++) rolls.push(Math.ceil(Math.random() * sides));
+var count = parseInt(match[1]) || 1;
+var sides = parseInt(match[2]);
+var mod   = parseInt(match[3]) || 0;
+var rolls = [];
+for (var i = 0; i < count; i++) rolls.push(Math.ceil(Math.random() * sides));
 var total = rolls.reduce(function(a,b){ return a+b; }, 0) + mod;
-const detail = `[${rolls.join(',')}]${mod !== 0 ? (mod>0?'+':'')+mod : ''}`;
-return { total, detail };
+var detail = '[' + rolls.join(',') + ']' + (mod !== 0 ? (mod>0?'+':'') + mod : '');
+return { total: total, detail: detail };
 }
 function rollCustom() {
-const formula = document.getElementById('custom_roll_input').value.trim();
+var formula = document.getElementById('custom_roll_input').value.trim();
 if (!formula) return;
-const r = rollFormula(formula);
+var r = rollFormula(formula);
 showDiceResult(formula, r.total, r.detail);
 }
 function rollWeaponAttack() {
-const ab = getAbilities();
-const atkAttr = document.getElementById('attack_attr').value;
-const wpnIdx  = parseInt(document.getElementById('weapon_select').value) || 0;
-const weapon  = WEAPONS_DATA[wpnIdx];
-const wpnProf = document.getElementById('weapon_prof').checked;
-const level   = parseInt(document.getElementById('char_level').value) || 1;
-const prof    = getProfBonus(level);
-const atkMod  = getMod(ab[atkAttr]);
-const atkBonus = atkMod + (wpnProf ? prof : 0);
-const d20 = Math.ceil(Math.random() * 20);
-const total = d20 + atkBonus;
-const dmg = rollFormula(weapon.dmg + (atkMod >= 0 ? '+' : '') + atkMod);
+var ab      = getAbilities();
+var atkAttr = document.getElementById('attack_attr').value;
+var wpnIdx  = parseInt(document.getElementById('weapon_select').value) || 0;
+var weapon  = WEAPONS_DATA[wpnIdx];
+var wpnProf = document.getElementById('weapon_prof').checked;
+var level   = parseInt(document.getElementById('char_level').value) || 1;
+var prof    = getProfBonus(level);
+var atkMod  = getMod(ab[atkAttr]);
+var atkBonus = atkMod + (wpnProf ? prof : 0);
+var d20   = Math.ceil(Math.random() * 20);
+var total = d20 + atkBonus;
+var dmg   = rollFormula(weapon.dmg + (atkMod >= 0 ? '+' : '') + atkMod);
 showDiceResult(
-`${weapon.name}: Ataque`,
+weapon.name + ': Ataque',
 total,
-`d20(${d20}) ${fmtMod(atkBonus)} | Daño: ${dmg.detail} = ${dmg.total} ${weapon.type}`
+'d20(' + d20 + ') ' + fmtMod(atkBonus) + ' | Daño: ' + dmg.detail + ' = ' + dmg.total + ' ' + weapon.type
 );
 document.querySelectorAll('.tab-btn').forEach(function(b){ b.classList.remove('active'); });
 document.querySelectorAll('.tab-panel').forEach(function(p){ p.classList.remove('active'); });
@@ -4353,21 +4347,19 @@ document.querySelector('[data-tab="dice"]').classList.add('active');
 document.getElementById('tab-dice').classList.add('active');
 }
 function rollSkill(name, bonus) {
-const d20 = Math.ceil(Math.random() * 20);
-showDiceResult(name, d20 + bonus, `d20(${d20}) ${fmtMod(bonus)}`);
+var d20 = Math.ceil(Math.random() * 20);
+showDiceResult(name, d20 + bonus, 'd20(' + d20 + ') ' + fmtMod(bonus));
 }
 function rollSave(name, bonus) {
-const d20 = Math.ceil(Math.random() * 20);
-showDiceResult(`Salvación ${name}`, d20 + bonus, `d20(${d20}) ${fmtMod(bonus)}`);
+var d20 = Math.ceil(Math.random() * 20);
+showDiceResult('Salvación ' + name, d20 + bonus, 'd20(' + d20 + ') ' + fmtMod(bonus));
 }
 function showDiceResult(label, total, detail) {
-const area = document.getElementById('dice_result_area');
-area.innerHTML = `
-<div class="dice-roll-label">${label}</div>
-<div class="dice-roll-number">${total}</div>
-<div class="dice-roll-detail">${detail}</div>
-`;
-diceHistory.unshift({ label, total, detail });
+var area = document.getElementById('dice_result_area');
+area.innerHTML = '<div class="dice-roll-label">' + label + '</div>'
++ '<div class="dice-roll-number">' + total + '</div>'
++ '<div class="dice-roll-detail">' + detail + '</div>';
+diceHistory.unshift({ label: label, total: total, detail: detail });
 if (diceHistory.length > 20) diceHistory.pop();
 renderDiceHistory();
 }
@@ -4415,7 +4407,7 @@ return '<div class="inv-row">'
 + '<button class="btn-remove" onclick="removeInvItem(' + i + ')">✕</button>'
 + '</div>';
 }).join('');
-document.getElementById('weight_total').textContent = `Peso total: ${totalWeight.toFixed(1)} lb`;
+document.getElementById('weight_total').textContent = 'Peso total: ' + totalWeight.toFixed(1) + ' lb';
 }
 function updateInvQty(i, val) {
 char.inventory[i].qty = Math.max(1, parseInt(val) || 1);
@@ -4469,22 +4461,55 @@ if (spell.components.v) components.push('V');
 if (spell.components.s) components.push('S');
 if (spell.components.m) components.push('M');
 }
-card.innerHTML = `
-<div class="spell-detail-title">${spell.name}</div>
-<div class="spell-detail-subtitle">
-${spell.level === 0 ? 'Truco' : 'Hechizo de nivel ' + spell.level} — ${spell.school || ''}
-</div>
-<div class="spell-detail-stats">
-<div class="spell-detail-stat"><strong>Tiempo</strong>${spell.casting_time || '—'}</div>
-<div class="spell-detail-stat"><strong>Alcance</strong>${spell.range || '—'}</div>
-<div class="spell-detail-stat"><strong>Duración</strong>${spell.duration || '—'}</div>
-<div class="spell-detail-stat"><strong>Componentes</strong>${components.join(', ') || '—'}</div>
-${spell.concentration ? '<div class="spell-detail-stat"><strong>Concentración</strong>Sí</div>' : ''}
-</div>
-<div class="spell-detail-desc">${spell.desc || 'Sin descripción disponible.'}</div>
-${spell.higher_levels ? `<div class="spell-detail-desc" style="margin-top:8px;padding-top:8px;border-top:1px solid var(--border)"><strong style="color:var(--gold2);font-size:0.8rem;">A NIVELES SUPERIORES:</strong> ${spell.higher_levels}</div>` : ''}
-`;
-document.getElementById('spell_add_btn_wrap').style.display = 'block';
+var ab    = getAbilities();
+var level = parseInt(document.getElementById('char_level').value) || 1;
+var cls   = document.getElementById('char_class').value;
+var prof  = getProfBonus(level);
+var spellAbilityMap = {
+Wizard:'int', Cleric:'wis', Druid:'wis', Bard:'cha',
+Sorcerer:'cha', Warlock:'cha', Paladin:'cha', Ranger:'wis',
+Barbarian:null, Fighter:null, Monk:'wis', Rogue:'int'
+};
+var spellAbility = spellAbilityMap[cls] || null;
+var abilityLabels = { int:'INT', wis:'SAB', cha:'CAR' };
+var statsHTML = '';
+if (spellAbility) {
+var spellMod  = getMod(ab[spellAbility]);
+var spellDC   = 8 + prof + spellMod;
+var spellAtk  = prof + spellMod;
+statsHTML = '<div style="background:rgba(200,168,75,0.08);border:1px solid rgba(200,168,75,0.25);border-radius:var(--radius);padding:8px 12px;margin-bottom:8px">'
++ '<div style="font-size:0.68rem;color:var(--gold2);letter-spacing:2px;font-family:var(--font-title);margin-bottom:6px">STATS DE TU PERSONAJE</div>'
++ '<div style="display:flex;gap:12px;flex-wrap:wrap">'
++ '<div style="text-align:center"><div style="font-family:var(--font-title);font-size:1.1rem;color:var(--gold2)">' + spellDC + '</div><div style="font-size:0.65rem;color:var(--text3)">CD Salvación</div></div>'
++ '<div style="text-align:center"><div style="font-family:var(--font-title);font-size:1.1rem;color:var(--gold2)">' + fmtMod(spellAtk) + '</div><div style="font-size:0.65rem;color:var(--text3)">Atk Hechizo</div></div>'
++ '<div style="text-align:center"><div style="font-family:var(--font-title);font-size:1.1rem;color:var(--gold2)">' + fmtMod(spellMod) + '</div><div style="font-size:0.65rem;color:var(--text3)">Mod. ' + abilityLabels[spellAbility] + '</div></div>'
++ '<div style="text-align:center"><div style="font-family:var(--font-title);font-size:1.1rem;color:var(--gold2)">' + fmtMod(prof) + '</div><div style="font-size:0.65rem;color:var(--text3)">Competencia</div></div>'
++ '</div></div>';
+}
+var levelLabel = spell.level === 0 ? 'Truco' : 'Hechizo de nivel ' + spell.level;
+var concBadge  = spell.concentration
+? '<span style="background:rgba(41,128,185,0.15);color:#5bb3e8;border:1px solid rgba(41,128,185,0.3);border-radius:3px;font-size:0.7rem;padding:1px 6px;margin-left:6px">Concentración</span>'
+: '';
+var ritualBadge = spell.ritual
+? '<span style="background:rgba(200,168,75,0.1);color:var(--gold2);border:1px solid rgba(200,168,75,0.3);border-radius:3px;font-size:0.7rem;padding:1px 6px;margin-left:6px">Ritual</span>'
+: '';
+var higherHTML = spell.higher_levels
+? '<div class="spell-detail-desc" style="margin-top:8px;padding-top:8px;border-top:1px solid var(--border)">'
++ '<strong style="color:var(--gold2);font-size:0.8rem">A NIVELES SUPERIORES:</strong> '
++ spell.higher_levels + '</div>'
+: '';
+card.innerHTML = '<div class="spell-detail-title">' + spell.name + '</div>'
++ '<div class="spell-detail-subtitle">' + levelLabel + ' — ' + (spell.school || '') + concBadge + ritualBadge + '</div>'
++ '<div class="spell-detail-stats">'
++ '<div class="spell-detail-stat"><strong>Tiempo</strong>' + (spell.casting_time || '—') + '</div>'
++ '<div class="spell-detail-stat"><strong>Alcance</strong>' + (spell.range || '—') + '</div>'
++ '<div class="spell-detail-stat"><strong>Duración</strong>' + (spell.duration || '—') + '</div>'
++ '<div class="spell-detail-stat"><strong>Componentes</strong>' + (components.join(', ') || '—') + '</div>'
++ '</div>'
++ statsHTML
++ '<div class="spell-detail-desc">' + (spell.desc || 'Sin descripción disponible.') + '</div>'
++ higherHTML;
+document.getElementById('spell_add_btn_wrap').style.display = 'flex';
 filterSpells();
 }
 function addSpellToChar() {
@@ -4507,7 +4532,7 @@ higher_levels: selectedSpell.higher_levels || '',
 });
 renderCharSpells();
 saveCharacter();
-showToast(`${selectedSpell.name} añadido`);
+showToast(selectedSpell.name + ' añadido');
 }
 function concentrateOnSelected() {
 if (!selectedSpell) return;
@@ -4519,7 +4544,7 @@ setConcentration(selectedSpell.name);
 showToast('Concentrándose en: ' + selectedSpell.name);
 }
 function getFullSpellData(saved) {
-let full = saved;
+var full = saved;
 if (typeof SPELLS_DATA !== 'undefined') {
 var live = SPELLS_DATA.find(function(s){ return s.name === saved.name; });
 if (live) full = Object.assign({}, live, { level: saved.level });
@@ -4540,51 +4565,43 @@ byLevel[s.level].push(s);
 });
 var html = '';
 Object.keys(byLevel).sort(function(a,b) { return a-b; }).forEach(function(lvl) {
-html += `<div class="spell-level-header">${lvl == 0 ? 'Trucos' : 'Nivel ' + lvl}</div>`;
+html += '<div class="spell-level-header">' + (lvl == 0 ? 'Trucos' : 'Nivel ' + lvl) + '</div>';
 byLevel[lvl].forEach(function(s) {
-const safeId = s.name.replace(/[^a-zA-Z0-9]/g, '_');
-const comps = [];
+var safeId = s.name.replace(/[^a-zA-Z0-9]/g, '_');
+var comps = [];
 if (s.components) {
 if (s.components.v) comps.push('V');
 if (s.components.s) comps.push('S');
 if (s.components.m) comps.push('M');
 }
-const compStr = comps.length ? comps.join(', ') : '—';
-const levelLabel = s.level === 0 ? 'Truco' : 'Nv.' + s.level;
-const schoolBadge = s.school
-? `<span class="badge badge-school" style="margin-left:6px">${s.school}</span>` : '';
-const concBadge = s.concentration
-? `<span class="badge" style="background:rgba(200,168,75,0.12);color:var(--gold);border:1px solid rgba(200,168,75,0.3);margin-left:4px">Conc.</span>` : '';
-const safeName = s.name.replace(/\\/g,'\\\\').replace(/'/g,"\\'");
-html += `
-<div class="char-spell-row" id="csr_${safeId}">
-<div class="char-spell-header" onclick="toggleCharSpell('${safeId}')">
-<span class="char-spell-toggle">▶</span>
-<span class="char-spell-name">${s.name}</span>
-<span class="char-spell-level">
-<span class="badge badge-level">${levelLabel}</span>${schoolBadge}${concBadge}
-</span>
-</div>
-<div class="char-spell-body">
-<div class="char-spell-stats">
-<div class="char-spell-stat"><strong>Tiempo de lanzamiento</strong>${s.casting_time || '—'}</div>
-<div class="char-spell-stat"><strong>Alcance</strong>${s.range || '—'}</div>
-<div class="char-spell-stat"><strong>Duración</strong>${s.duration || '—'}</div>
-<div class="char-spell-stat"><strong>Componentes</strong>${compStr}</div>
-</div>
-${s.desc ? `<div class="char-spell-desc">${s.desc}</div>` : '<div class="char-spell-desc" style="color:var(--text3);font-style:italic">Sin descripción disponible.</div>'}
-${s.higher_levels ? `<div class="char-spell-higher"><strong>A niveles superiores</strong>${s.higher_levels}</div>` : ''}
-<div class="char-spell-footer">
-<button class="btn-remove" onclick="removeCharSpell('${safeName}')">✕ Eliminar</button>
-</div>
-</div>
-</div>`;
+var compStr = comps.length ? comps.join(', ') : '—';
+var levelLabel  = s.level === 0 ? 'Truco' : 'Nv.' + s.level;
+var schoolBadge = s.school ? '<span class="badge badge-school" style="margin-left:6px">' + s.school + '</span>' : '';
+var concBadge   = s.concentration ? '<span class="badge" style="background:rgba(200,168,75,0.12);color:var(--gold);border:1px solid rgba(200,168,75,0.3);margin-left:4px">Conc.</span>' : '';
+var safeName    = s.name.replace(/\\/g,'\\\\').replace(/'/g,"\\'");
+html += '<div class="char-spell-row" id="csr_' + safeId + '">'
++ '<div class="char-spell-header" onclick="toggleCharSpell(\'' + safeId + '\')">'
++ '<span class="char-spell-toggle">▶</span>'
++ '<span class="char-spell-name">' + s.name + '</span>'
++ '<span class="char-spell-level"><span class="badge badge-level">' + levelLabel + '</span>' + schoolBadge + concBadge + '</span>'
++ '</div>'
++ '<div class="char-spell-body">'
++ '<div class="char-spell-stats">'
++ '<div class="char-spell-stat"><strong>Tiempo de lanzamiento</strong>' + (s.casting_time || '—') + '</div>'
++ '<div class="char-spell-stat"><strong>Alcance</strong>' + (s.range || '—') + '</div>'
++ '<div class="char-spell-stat"><strong>Duración</strong>' + (s.duration || '—') + '</div>'
++ '<div class="char-spell-stat"><strong>Componentes</strong>' + compStr + '</div>'
++ '</div>'
++ (s.desc ? '<div class="char-spell-desc">' + s.desc + '</div>' : '<div class="char-spell-desc" style="color:var(--text3);font-style:italic">Sin descripción disponible.</div>')
++ (s.higher_levels ? '<div class="char-spell-higher"><strong>A niveles superiores</strong>' + s.higher_levels + '</div>' : '')
++ '<div class="char-spell-footer"><button class="btn-remove" onclick="removeCharSpell(\'' + safeName + '\')">✕ Eliminar</button></div>'
++ '</div></div>';
 });
 });
 container.innerHTML = html;
 }
 function toggleCharSpell(safeId) {
-const row = document.getElementById('csr_' + safeId);
+var row = document.getElementById('csr_' + safeId);
 if (row) row.classList.toggle('expanded');
 }
 function removeCharSpell(name) {
