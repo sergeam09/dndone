@@ -2158,6 +2158,9 @@ let char = {
   applied_subclass: null,
   // Sessions
   sessions: [],
+  // XP & Concentration
+  xp: 0,
+  concentrating: null,
 };
 
 // ============================================================
@@ -3379,6 +3382,28 @@ function openCharacter(id) {
     buildSubclassSelect();
     hideRoster();
     showToast('Personaje cargado: ' + (char.name || 'Sin nombre'));
+  } else {
+    // Data missing — open with defaults and set as active so it gets saved
+    activeCharId = id;
+    try { localStorage.setItem(ACTIVE_KEY, id); } catch(e) {}
+    // Reset to blank
+    char.name=''; char.race=''; char.background=''; char.alignment='Legal Bueno';
+    char.level=1; char.class='Barbarian';
+    char.str=10; char.dex=10; char.con=10; char.int=10; char.wis=10; char.cha=10;
+    char.hp_current=0; char.hp_temp=0; char.armor=0; char.has_shield=false;
+    char.weapon_idx=0; char.attack_attr='str'; char.weapon_prof=false; char.inspiration=false;
+    char.skill_profs={}; char.save_profs={}; char.spell_slots_used={};
+    char.char_spells=[]; char.custom_attacks=[]; char.inventory=[];
+    char.coins={pp:0,gp:0,ep:0,cp:0}; char.conditions=[];
+    char.notes_traits=''; char.notes_features=''; char.notes_general='';
+    char.feats=[]; char.applied_race=null; char.applied_bg=null; char.applied_subclass=null;
+    char.sessions=[]; char.xp=0; char.concentrating=null;
+    saveActiveChar();
+    applyCharToForm();
+    recalc();
+    buildSubclassSelect();
+    hideRoster();
+    showToast('Personaje abierto — listo para editar');
   }
 }
 
