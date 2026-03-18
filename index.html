@@ -836,6 +836,31 @@ input[type="number"] { text-align: center; }
 .toast.show { transform: translateY(0); opacity: 1; }
 
 /* ============================================================
+   DM MODE
+============================================================ */
+.creature-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 10px;
+  background: var(--bg3);
+  border-radius: var(--radius);
+  margin-bottom: 6px;
+  border-left: 3px solid var(--border2);
+  flex-wrap: wrap;
+}
+.creature-row.active-turn { border-left-color: var(--gold); background: rgba(200,168,75,0.08); }
+.creature-row.dead { opacity: 0.4; }
+.creature-name { font-weight: 600; font-size: 0.9rem; flex: 1; min-width: 80px; }
+.creature-stat { font-family: var(--font-title); font-size: 0.85rem; color: var(--gold2); min-width: 36px; text-align: center; }
+.creature-stat label { display: block; font-size: 0.6rem; color: var(--text3); font-family: var(--font-body); font-weight: normal; }
+.hp-input-sm { width: 48px; text-align: center; font-size: 0.82rem; background: var(--bg4); border: 1px solid var(--border2); border-radius: 4px; color: var(--text); padding: 2px 4px; }
+.npc-card { background: var(--bg3); border: 1px solid var(--border); border-radius: var(--radius); padding: 10px 12px; margin-bottom: 8px; }
+.npc-card-name { font-family: var(--font-title); color: var(--gold); font-size: 0.9rem; }
+.npc-card-role { font-size: 0.75rem; color: var(--text3); margin-bottom: 4px; }
+.npc-card-notes { font-size: 0.82rem; color: var(--text2); white-space: pre-wrap; }
+
+/* ============================================================
    ROSTER & GENERATOR
 ============================================================ */
 .roster-card {
@@ -1307,6 +1332,7 @@ input[type="number"] { text-align: center; }
   <button class="tab-btn" data-tab="dice">🎲 Dados</button>
   <button class="tab-btn" data-tab="notes">📝 Notas</button>
   <button class="tab-btn" data-tab="sessions">📖 Sesiones</button>
+  <button class="tab-btn" data-tab="dm" onclick="openDMTab()">🎭 DM</button>
 </nav>
 
 <!-- ══════════════════════════════════════════════
@@ -1867,6 +1893,45 @@ input[type="number"] { text-align: center; }
 ══════════════════════════════════════════════ -->
 <div id="tab-notes" class="tab-panel">
 
+  <!-- RETRATO DEL PERSONAJE -->
+  <p class="section-title">Ilustración del Personaje</p>
+  <div class="card" style="padding:14px">
+    <div style="display:flex;gap:14px;align-items:flex-start;flex-wrap:wrap">
+
+      <!-- Portrait frame -->
+      <div id="portrait_wrap" style="flex-shrink:0;position:relative">
+        <div id="portrait_placeholder" onclick="triggerPortraitUpload()"
+          style="width:120px;height:170px;border:2px dashed var(--border2);border-radius:var(--radius);
+                 display:flex;flex-direction:column;align-items:center;justify-content:center;
+                 cursor:pointer;background:var(--bg3);transition:border-color 0.2s;gap:6px">
+          <span style="font-size:2rem;opacity:0.4">🧙</span>
+          <span style="font-size:0.7rem;color:var(--text3);text-align:center;padding:0 8px">Toca para subir ilustración</span>
+        </div>
+        <img id="portrait_img" src="" alt="Retrato"
+          style="display:none;width:120px;height:170px;object-fit:cover;border-radius:var(--radius);
+                 border:2px solid var(--gold);cursor:pointer;box-shadow:0 4px 16px rgba(0,0,0,0.5)"
+          onclick="triggerPortraitUpload()" title="Toca para cambiar ilustración">
+        <button id="portrait_remove_btn" onclick="removePortrait()"
+          style="display:none;position:absolute;top:4px;right:4px;background:rgba(0,0,0,0.7);
+                 border:1px solid var(--border2);color:var(--text3);border-radius:50%;
+                 width:22px;height:22px;font-size:0.7rem;cursor:pointer;line-height:1;padding:0">✕</button>
+      </div>
+
+      <!-- Info alongside portrait -->
+      <div style="flex:1;min-width:140px">
+        <p style="font-size:0.78rem;color:var(--text3);line-height:1.6;margin-bottom:10px">
+          Sube el retrato de tu personaje. Formatos: PNG, JPG, WebP.<br>
+          Se guarda localmente en este dispositivo.
+        </p>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <button class="btn-add" onclick="triggerPortraitUpload()" style="font-size:0.78rem">🖼 Subir imagen</button>
+          <button class="btn-sm" id="portrait_change_btn" onclick="triggerPortraitUpload()" style="display:none;font-size:0.72rem">Cambiar</button>
+        </div>
+        <input type="file" id="portrait_file_input" accept="image/*" style="display:none" onchange="handlePortraitUpload(event)">
+      </div>
+    </div>
+  </div>
+
   <p class="section-title">Rasgos de Personalidad</p>
   <div class="card">
     <textarea class="notes-area" id="notes_traits" placeholder="Rasgos de personalidad, ideales, vínculos, defectos..." style="min-height:120px;" oninput="saveCharacter()"></textarea>
@@ -1925,6 +1990,104 @@ input[type="number"] { text-align: center; }
 
   <div id="session_xp_total" style="text-align:right;font-family:var(--font-title);font-size:0.85rem;color:var(--gold2);margin-top:8px"></div>
 
+</div>
+
+<!-- ══════════════════════════════════════════════
+     TAB: MODO DM
+══════════════════════════════════════════════ -->
+<div id="tab-dm" class="tab-panel">
+
+  <!-- LOCK SCREEN -->
+  <div id="dm_lock_screen">
+    <div class="card" style="max-width:320px;margin:40px auto;text-align:center;padding:28px 24px">
+      <div style="font-size:2.5rem;margin-bottom:10px">🎭</div>
+      <h2 style="font-family:var(--font-title);color:var(--gold);letter-spacing:2px;font-size:1rem;margin-bottom:6px">MODO DM</h2>
+      <p style="font-size:0.82rem;color:var(--text3);margin-bottom:20px">Notas privadas del Dungeon Master.<br>Protegido por PIN.</p>
+      <div id="dm_pin_setup" style="display:none">
+        <p style="font-size:0.8rem;color:var(--text2);margin-bottom:10px">Crea un PIN de 4 dígitos</p>
+        <input type="password" id="dm_pin_new" maxlength="4" inputmode="numeric" pattern="[0-9]*"
+          placeholder="PIN nuevo" style="text-align:center;letter-spacing:8px;font-size:1.2rem;width:120px;margin-bottom:8px">
+        <br>
+        <input type="password" id="dm_pin_confirm" maxlength="4" inputmode="numeric" pattern="[0-9]*"
+          placeholder="Confirmar" style="text-align:center;letter-spacing:8px;font-size:1.2rem;width:120px;margin-bottom:14px">
+        <br>
+        <button class="btn-add" onclick="createDMPin()">Crear PIN</button>
+      </div>
+      <div id="dm_pin_entry">
+        <input type="password" id="dm_pin_input" maxlength="4" inputmode="numeric" pattern="[0-9]*"
+          placeholder="PIN" style="text-align:center;letter-spacing:8px;font-size:1.4rem;width:120px;margin-bottom:14px"
+          onkeydown="if(event.key==='Enter') unlockDM()">
+        <br>
+        <button class="btn-add" onclick="unlockDM()" style="margin-right:8px">Entrar</button>
+        <button class="btn-sm" onclick="forgotDMPin()">¿Olvidé el PIN?</button>
+      </div>
+      <p id="dm_pin_error" style="color:#e74c3c;font-size:0.8rem;margin-top:10px;display:none">PIN incorrecto</p>
+    </div>
+  </div>
+
+  <!-- DM CONTENT (hidden until unlocked) -->
+  <div id="dm_content" style="display:none">
+
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+      <p class="section-title" style="margin:0">🎭 Modo DM</p>
+      <div style="display:flex;gap:8px">
+        <button class="btn-sm" onclick="changeDMPin()" style="font-size:0.68rem">🔑 PIN</button>
+        <button class="btn-sm" onclick="lockDM()" style="font-size:0.68rem;border-color:#e74c3c;color:#e74c3c">🔒 Bloquear</button>
+      </div>
+    </div>
+
+    <!-- INICIATIVA / ENCUENTRO -->
+    <p class="section-title">⚔ Tracker de Encuentro</p>
+    <div class="card">
+      <div style="display:flex;gap:8px;margin-bottom:10px;flex-wrap:wrap">
+        <input type="text" id="enc_name" placeholder="Nombre (ej: Goblin)" style="flex:2;min-width:100px">
+        <input type="number" id="enc_init" placeholder="Init" style="width:60px;text-align:center">
+        <input type="number" id="enc_hp" placeholder="HP" style="width:60px;text-align:center">
+        <input type="number" id="enc_ac" placeholder="CA" style="width:60px;text-align:center">
+        <button class="btn-add" onclick="addEncounterCreature()" style="font-size:0.78rem">+ Añadir</button>
+      </div>
+      <div id="encounter_list">
+        <p class="empty-msg">No hay criaturas en el encuentro</p>
+      </div>
+      <div style="text-align:right;margin-top:8px;display:flex;gap:8px;justify-content:flex-end">
+        <button class="btn-sm" onclick="sortByInitiative()" style="font-size:0.68rem">↕ Ordenar por iniciativa</button>
+        <button class="btn-sm" onclick="clearEncounter()" style="font-size:0.68rem;border-color:#e74c3c;color:#e74c3c">✕ Limpiar</button>
+      </div>
+    </div>
+
+    <!-- NPCs -->
+    <p class="section-title">👥 NPCs</p>
+    <div class="card">
+      <div style="display:flex;gap:8px;margin-bottom:10px;flex-wrap:wrap">
+        <input type="text" id="npc_name" placeholder="Nombre del NPC" style="flex:2;min-width:120px">
+        <input type="text" id="npc_role" placeholder="Rol / Raza" style="flex:1;min-width:80px">
+        <button class="btn-add" onclick="addNPC()" style="font-size:0.78rem">+ Añadir</button>
+      </div>
+      <div style="margin-bottom:8px">
+        <textarea id="npc_notes_input" class="notes-area" style="min-height:60px" placeholder="Notas del NPC (stats, motivaciones, secretos...)"></textarea>
+      </div>
+      <div id="npc_list">
+        <p class="empty-msg">No hay NPCs registrados</p>
+      </div>
+    </div>
+
+    <!-- NOTAS PRIVADAS -->
+    <p class="section-title">📝 Notas Privadas del DM</p>
+    <div class="card">
+      <textarea class="notes-area" id="dm_notes" style="min-height:200px"
+        placeholder="Secretos del arco narrativo, trampas preparadas, recompensas planeadas, notas que los jugadores NO deben ver..."
+        oninput="saveDMData()"></textarea>
+    </div>
+
+    <!-- NOTAS DE SESIÓN DM -->
+    <p class="section-title">🗺 Mapa de la Sesión / Resumen DM</p>
+    <div class="card">
+      <textarea class="notes-area" id="dm_session_notes" style="min-height:120px"
+        placeholder="Resumen de lo que pasó, lo que planeas para la próxima sesión, rumores, pistas..."
+        oninput="saveDMData()"></textarea>
+    </div>
+
+  </div>
 </div>
 
 <!-- LEVEL FEATURES MODAL -->
@@ -2161,6 +2324,8 @@ let char = {
   // XP & Concentration
   xp: 0,
   concentrating: null,
+  // Portrait
+  portrait: null,
 };
 
 // ============================================================
@@ -3089,6 +3254,8 @@ function printCharSheet() {
   }
   var logoHTML = logoSrc ? '<img src="'+logoSrc+'" style="width:60px;height:60px;object-fit:contain;border-radius:50%">' : '<div style="width:60px;height:60px;border-radius:50%;background:#c8a84b;display:flex;align-items:center;justify-content:center;font-size:22px">⚔</div>';
 
+  var portraitHTML = char.portrait ? '<img src="'+char.portrait+'" style="width:80px;height:113px;object-fit:cover;border-radius:4px;border:2px solid #c8a84b;margin-left:8px">' : '';
+
   var html = '<!DOCTYPE html><html><head><meta charset="UTF-8">'
     +'<title>Hoja — '+(char.name||'Personaje')+'</title>'
     +'<style>'
@@ -3129,6 +3296,7 @@ function printCharSheet() {
     +'<div class="char-name">'+cls+' '+level+'° &nbsp;·&nbsp; '+(char.race||'—')+' &nbsp;·&nbsp; '+(char.background||'—')+'</div>'
     +'</div>'
     +'<div class="meta">'+char.alignment+'<br>PG máx: '+Math.max(1,hpMax)+'<br>Prof: '+fmtMod(prof)+'</div>'
+    +portraitHTML
     +'</div>'
 
     // DERIVED STATS
@@ -3202,6 +3370,310 @@ function printCharSheet() {
   win.document.close();
   win.focus();
   setTimeout(function(){ win.print(); }, 600);
+}
+
+// ============================================================
+// MODO DM
+// ============================================================
+var DM_PIN_KEY  = 'dnd5e_dm_pin';
+var DM_DATA_KEY = 'dnd5e_dm_data';
+var dmData = { notes:'', sessionNotes:'', encounter:[], npcs:[] };
+var dmUnlocked = false;
+
+function getDMPin() {
+  try { return localStorage.getItem(DM_PIN_KEY) || null; } catch(e) { return null; }
+}
+
+function openDMTab() {
+  // Called when tab button clicked — show lock or content
+  setTimeout(function() {
+    var pin = getDMPin();
+    if (!pin) {
+      // No PIN set yet — show setup
+      document.getElementById('dm_pin_setup').style.display = 'block';
+      document.getElementById('dm_pin_entry').style.display = 'none';
+      document.getElementById('dm_lock_screen').style.display = 'block';
+      document.getElementById('dm_content').style.display = 'none';
+    } else if (dmUnlocked) {
+      // Already unlocked this session
+      document.getElementById('dm_lock_screen').style.display = 'none';
+      document.getElementById('dm_content').style.display = 'block';
+    } else {
+      // Show PIN entry
+      document.getElementById('dm_pin_setup').style.display = 'none';
+      document.getElementById('dm_pin_entry').style.display = 'block';
+      document.getElementById('dm_lock_screen').style.display = 'block';
+      document.getElementById('dm_content').style.display = 'none';
+      document.getElementById('dm_pin_error').style.display = 'none';
+      setTimeout(function(){ var el=document.getElementById('dm_pin_input'); if(el) el.focus(); }, 100);
+    }
+  }, 50);
+}
+
+function createDMPin() {
+  var p1 = document.getElementById('dm_pin_new').value.trim();
+  var p2 = document.getElementById('dm_pin_confirm').value.trim();
+  if (!p1 || p1.length < 4) { showToast('El PIN debe tener 4 dígitos'); return; }
+  if (p1 !== p2) { showToast('Los PINes no coinciden'); return; }
+  try { localStorage.setItem(DM_PIN_KEY, p1); } catch(e) {}
+  dmUnlocked = true;
+  loadDMData();
+  document.getElementById('dm_lock_screen').style.display = 'none';
+  document.getElementById('dm_content').style.display = 'block';
+  showToast('PIN creado — Modo DM desbloqueado');
+}
+
+function unlockDM() {
+  var input = document.getElementById('dm_pin_input').value.trim();
+  var stored = getDMPin();
+  if (input === stored) {
+    dmUnlocked = true;
+    loadDMData();
+    document.getElementById('dm_lock_screen').style.display = 'none';
+    document.getElementById('dm_content').style.display = 'block';
+    document.getElementById('dm_pin_input').value = '';
+    document.getElementById('dm_pin_error').style.display = 'none';
+    showToast('Modo DM desbloqueado');
+  } else {
+    document.getElementById('dm_pin_error').style.display = 'block';
+    document.getElementById('dm_pin_input').value = '';
+    document.getElementById('dm_pin_input').focus();
+  }
+}
+
+function lockDM() {
+  dmUnlocked = false;
+  document.getElementById('dm_lock_screen').style.display = 'block';
+  document.getElementById('dm_content').style.display = 'none';
+  document.getElementById('dm_pin_setup').style.display = 'none';
+  document.getElementById('dm_pin_entry').style.display = 'block';
+  document.getElementById('dm_pin_error').style.display = 'none';
+  document.getElementById('dm_pin_input').value = '';
+  showToast('Modo DM bloqueado');
+}
+
+function changeDMPin() {
+  var old = prompt('PIN actual:');
+  if (old === null) return;
+  if (old !== getDMPin()) { showToast('PIN incorrecto'); return; }
+  var nuevo = prompt('Nuevo PIN (4 dígitos):');
+  if (!nuevo || nuevo.length < 4) { showToast('PIN inválido'); return; }
+  var confirm2 = prompt('Confirmar nuevo PIN:');
+  if (nuevo !== confirm2) { showToast('Los PINes no coinciden'); return; }
+  try { localStorage.setItem(DM_PIN_KEY, nuevo); } catch(e) {}
+  showToast('PIN cambiado');
+}
+
+function forgotDMPin() {
+  if (!confirm('¿Restablecer PIN? Se borrarán todos los datos del Modo DM.')) return;
+  try {
+    localStorage.removeItem(DM_PIN_KEY);
+    localStorage.removeItem(DM_DATA_KEY);
+  } catch(e) {}
+  dmData = { notes:'', sessionNotes:'', encounter:[], npcs:[] };
+  dmUnlocked = false;
+  document.getElementById('dm_pin_setup').style.display = 'block';
+  document.getElementById('dm_pin_entry').style.display = 'none';
+  document.getElementById('dm_pin_error').style.display = 'none';
+  showToast('PIN restablecido');
+}
+
+function loadDMData() {
+  try {
+    var raw = localStorage.getItem(DM_DATA_KEY);
+    if (raw) dmData = JSON.parse(raw);
+  } catch(e) {}
+  document.getElementById('dm_notes').value = dmData.notes || '';
+  document.getElementById('dm_session_notes').value = dmData.sessionNotes || '';
+  renderEncounter();
+  renderNPCList();
+}
+
+function saveDMData() {
+  dmData.notes = document.getElementById('dm_notes').value;
+  dmData.sessionNotes = document.getElementById('dm_session_notes').value;
+  try { localStorage.setItem(DM_DATA_KEY, JSON.stringify(dmData)); } catch(e) {}
+}
+
+// ── ENCOUNTER TRACKER ─────────────────────────────────────
+function addEncounterCreature() {
+  var name = document.getElementById('enc_name').value.trim();
+  if (!name) { showToast('Escribe el nombre de la criatura'); return; }
+  var init = parseInt(document.getElementById('enc_init').value) || 0;
+  var hp   = parseInt(document.getElementById('enc_hp').value)   || 1;
+  var ac   = parseInt(document.getElementById('enc_ac').value)   || 10;
+  dmData.encounter.push({ id: Date.now(), name: name, init: init, hp: hp, hpMax: hp, ac: ac, dead: false, active: false });
+  document.getElementById('enc_name').value  = '';
+  document.getElementById('enc_init').value  = '';
+  document.getElementById('enc_hp').value    = '';
+  document.getElementById('enc_ac').value    = '';
+  saveDMData();
+  renderEncounter();
+}
+
+function sortByInitiative() {
+  dmData.encounter.sort(function(a,b){ return b.init - a.init; });
+  saveDMData();
+  renderEncounter();
+}
+
+function clearEncounter() {
+  if (!confirm('¿Limpiar el encuentro?')) return;
+  dmData.encounter = [];
+  saveDMData();
+  renderEncounter();
+}
+
+function updateCreatureHP(id, delta) {
+  var c = dmData.encounter.find(function(x){ return x.id === id; });
+  if (!c) return;
+  c.hp = Math.max(0, Math.min(c.hpMax, c.hp + delta));
+  if (c.hp === 0) c.dead = true;
+  saveDMData();
+  renderEncounter();
+}
+
+function setCreatureHP(id, val) {
+  var c = dmData.encounter.find(function(x){ return x.id === id; });
+  if (!c) return;
+  c.hp = Math.max(0, Math.min(c.hpMax, parseInt(val) || 0));
+  c.dead = c.hp === 0;
+  saveDMData();
+}
+
+function toggleActiveTurn(id) {
+  dmData.encounter.forEach(function(c){ c.active = (c.id === id) ? !c.active : false; });
+  saveDMData();
+  renderEncounter();
+}
+
+function removeCreature(id) {
+  dmData.encounter = dmData.encounter.filter(function(c){ return c.id !== id; });
+  saveDMData();
+  renderEncounter();
+}
+
+function renderEncounter() {
+  var container = document.getElementById('encounter_list');
+  if (!container) return;
+  if (!dmData.encounter.length) {
+    container.innerHTML = '<p class="empty-msg">No hay criaturas en el encuentro</p>';
+    return;
+  }
+  container.innerHTML = dmData.encounter.map(function(c) {
+    var hpPct = Math.round(c.hp / c.hpMax * 100);
+    var hpColor = hpPct > 50 ? '#27ae60' : hpPct > 25 ? '#f39c12' : '#e74c3c';
+    var deadClass = c.dead ? ' dead' : '';
+    var activeClass = c.active ? ' active-turn' : '';
+    return '<div class="creature-row'+deadClass+activeClass+'" id="cr_'+c.id+'">'
+      +'<div onclick="toggleActiveTurn('+c.id+')" style="cursor:pointer;font-size:1.1rem;opacity:'+(c.active?'1':'0.3')+'" title="Turno activo">▶</div>'
+      +'<div class="creature-name">'+c.name+'</div>'
+      +'<div class="creature-stat"><label>INIT</label>'+c.init+'</div>'
+      +'<div class="creature-stat"><label>CA</label>'+c.ac+'</div>'
+      +'<div style="display:flex;flex-direction:column;align-items:center;gap:2px">'
+      +'<label style="font-size:0.6rem;color:var(--text3)">HP</label>'
+      +'<div style="display:flex;align-items:center;gap:3px">'
+      +'<button onclick="updateCreatureHP('+c.id+',-1)" style="background:none;border:1px solid var(--border2);color:var(--text2);border-radius:3px;width:18px;height:18px;cursor:pointer;font-size:0.8rem;line-height:1;padding:0">−</button>'
+      +'<input class="hp-input-sm" type="number" value="'+c.hp+'" min="0" max="'+c.hpMax+'" onchange="setCreatureHP('+c.id+',this.value)" style="color:'+hpColor+'">'
+      +'<button onclick="updateCreatureHP('+c.id+',+1)" style="background:none;border:1px solid var(--border2);color:var(--text2);border-radius:3px;width:18px;height:18px;cursor:pointer;font-size:0.8rem;line-height:1;padding:0">+</button>'
+      +'</div>'
+      +'<div style="font-size:0.65rem;color:var(--text3)">/ '+c.hpMax+'</div>'
+      +'</div>'
+      +'<button class="btn-remove" onclick="removeCreature('+c.id+')">✕</button>'
+      +'</div>';
+  }).join('');
+}
+
+// ── NPCs ──────────────────────────────────────────────────
+function addNPC() {
+  var name  = document.getElementById('npc_name').value.trim();
+  if (!name) { showToast('Escribe el nombre del NPC'); return; }
+  var role  = document.getElementById('npc_role').value.trim();
+  var notes = document.getElementById('npc_notes_input').value.trim();
+  dmData.npcs.push({ id: Date.now(), name: name, role: role, notes: notes });
+  document.getElementById('npc_name').value  = '';
+  document.getElementById('npc_role').value  = '';
+  document.getElementById('npc_notes_input').value = '';
+  saveDMData();
+  renderNPCList();
+}
+
+function removeNPC(id) {
+  dmData.npcs = dmData.npcs.filter(function(n){ return n.id !== id; });
+  saveDMData();
+  renderNPCList();
+}
+
+function renderNPCList() {
+  var container = document.getElementById('npc_list');
+  if (!container) return;
+  if (!dmData.npcs.length) {
+    container.innerHTML = '<p class="empty-msg">No hay NPCs registrados</p>';
+    return;
+  }
+  container.innerHTML = dmData.npcs.map(function(n) {
+    return '<div class="npc-card">'
+      +'<div style="display:flex;justify-content:space-between;align-items:flex-start">'
+      +'<div>'
+      +'<div class="npc-card-name">'+n.name+'</div>'
+      +(n.role ? '<div class="npc-card-role">'+n.role+'</div>' : '')
+      +'</div>'
+      +'<button class="btn-remove" onclick="removeNPC('+n.id+')">✕</button>'
+      +'</div>'
+      +(n.notes ? '<div class="npc-card-notes" style="margin-top:6px">'+n.notes+'</div>' : '')
+      +'</div>';
+  }).join('');
+}
+
+// ============================================================
+// RETRATO DEL PERSONAJE
+// ============================================================
+function triggerPortraitUpload() {
+  document.getElementById('portrait_file_input').click();
+}
+
+function handlePortraitUpload(event) {
+  var file = event.target.files[0];
+  if (!file) return;
+  var reader = new FileReader();
+  reader.onload = function(e) {
+    var dataUrl = e.target.result;
+    char.portrait = dataUrl;
+    applyPortrait(dataUrl);
+    saveCharacter();
+    showToast('Ilustración guardada');
+  };
+  reader.readAsDataURL(file);
+  event.target.value = '';
+}
+
+function applyPortrait(dataUrl) {
+  var img         = document.getElementById('portrait_img');
+  var placeholder = document.getElementById('portrait_placeholder');
+  var removeBtn   = document.getElementById('portrait_remove_btn');
+  var changeBtn   = document.getElementById('portrait_change_btn');
+  if (!img) return;
+  if (dataUrl) {
+    img.src             = dataUrl;
+    img.style.display   = 'block';
+    placeholder.style.display = 'none';
+    removeBtn.style.display   = 'block';
+    changeBtn.style.display   = 'inline-block';
+  } else {
+    img.style.display   = 'none';
+    img.src             = '';
+    placeholder.style.display = 'flex';
+    removeBtn.style.display   = 'none';
+    changeBtn.style.display   = 'none';
+  }
+}
+
+function removePortrait() {
+  if (!confirm('¿Eliminar la ilustración del personaje?')) return;
+  char.portrait = null;
+  applyPortrait(null);
+  saveCharacter();
+  showToast('Ilustración eliminada');
 }
 
 // ============================================================
@@ -3397,7 +3869,7 @@ function openCharacter(id) {
     char.coins={pp:0,gp:0,ep:0,cp:0}; char.conditions=[];
     char.notes_traits=''; char.notes_features=''; char.notes_general='';
     char.feats=[]; char.applied_race=null; char.applied_bg=null; char.applied_subclass=null;
-    char.sessions=[]; char.xp=0; char.concentrating=null;
+    char.sessions=[]; char.xp=0; char.concentrating=null; char.portrait=null;
     saveActiveChar();
     applyCharToForm();
     recalc();
@@ -3424,7 +3896,7 @@ function newCharacter() {
   char.coins={pp:0,gp:0,ep:0,cp:0}; char.conditions=[];
   char.notes_traits=''; char.notes_features=''; char.notes_general='';
   char.feats=[]; char.applied_race=null; char.applied_bg=null; char.applied_subclass=null;
-  char.sessions=[];
+  char.sessions=[]; char.xp=0; char.concentrating=null; char.portrait=null;
 
   // Add to roster
   var roster = getRoster();
@@ -3758,7 +4230,7 @@ function createGeneratedCharacter() {
   char.coins={pp:0,gp:0,ep:0,cp:0}; char.conditions=[];
   char.notes_traits=''; char.notes_features=''; char.notes_general='';
   char.feats=[]; char.applied_race=null; char.applied_bg=null; char.applied_subclass=null;
-  char.sessions=[];
+  char.sessions=[]; char.xp=0; char.concentrating=null; char.portrait=null;
 
   // Apply class saves
   var classData = CLASSES[cls];
@@ -4688,6 +5160,7 @@ function applyCharToForm() {
   document.getElementById('header_name').textContent = char.name || 'Sin personaje';
   renderXPBar();
   renderConcentration();
+  applyPortrait(char.portrait || null);
 }
 
 // ============================================================
