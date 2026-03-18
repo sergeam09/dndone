@@ -3986,6 +3986,7 @@ document.querySelectorAll('.tab-btn').forEach(function(b) { b.classList.remove('
 document.querySelectorAll('.tab-panel').forEach(function(p) { p.classList.remove('active'); });
 btn.classList.add('active');
 document.getElementById('tab-' + btn.dataset.tab).classList.add('active');
+if (btn.dataset.tab === 'origin') buildSubclassSelect();
 });
 });
 }
@@ -4620,6 +4621,7 @@ setVal('char_background', char.background || '');
 setVal('char_alignment',  char.alignment || 'Legal Bueno');
 setVal('char_level',      char.level || 1);
 setVal('char_class',      char.class || 'Barbarian');
+buildSubclassSelect();
 setVal('stat_str',        char.str || 10);
 setVal('stat_dex',        char.dex || 10);
 setVal('stat_con',        char.con || 10);
