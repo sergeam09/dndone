@@ -856,6 +856,20 @@ input[type="number"] { text-align: center; }
 }
 .toast.show { transform: translateY(0); opacity: 1; }
 
+.monster-result-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 5px 8px;
+  border-bottom: 1px solid var(--bg4);
+  cursor: pointer;
+  border-radius: 3px;
+  transition: background 0.15s;
+}
+.monster-result-item:hover { background: var(--bg3); }
+.monster-result-name { font-weight: 600; font-size: 0.85rem; }
+.monster-result-meta { font-size: 0.72rem; color: var(--text3); text-align: right; }
+
 .dm-ref-title {
   font-family: var(--font-title);
   font-size: 0.82rem;
@@ -2134,6 +2148,64 @@ input[type="number"] { text-align: center; }
     </div>
 
     <!-- INICIATIVA / ENCUENTRO -->
+    <p class="section-title">🐉 Buscador de Monstruos</p>
+    <div class="card" style="margin-bottom:10px">
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px">
+        <input type="text" id="monster_search" placeholder="🔍 Nombre..." style="flex:2;min-width:120px;font-size:0.85rem" oninput="filterMonsters()">
+        <select id="monster_nd_filter" style="flex:1;min-width:80px;font-size:0.82rem" onchange="filterMonsters()">
+          <option value="">Todos los ND</option>
+          <option value="0">ND 0</option>
+          <option value="1/8">ND 1/8</option>
+          <option value="1/4">ND 1/4</option>
+          <option value="1/2">ND 1/2</option>
+          <option value="1">ND 1</option>
+          <option value="2">ND 2</option>
+          <option value="3">ND 3</option>
+          <option value="4">ND 4</option>
+          <option value="5">ND 5</option>
+          <option value="6">ND 6</option>
+          <option value="7">ND 7</option>
+          <option value="8">ND 8</option>
+          <option value="9">ND 9</option>
+          <option value="10">ND 10</option>
+          <option value="11">ND 11</option>
+          <option value="12">ND 12</option>
+          <option value="13">ND 13</option>
+          <option value="14">ND 14</option>
+          <option value="15">ND 15</option>
+          <option value="16">ND 16+</option>
+        </select>
+        <select id="monster_type_filter" style="flex:1;min-width:100px;font-size:0.82rem" onchange="filterMonsters()">
+          <option value="">Todos los tipos</option>
+          <option value="aberración">Aberración</option>
+          <option value="bestia">Bestia</option>
+          <option value="celestial">Celestial</option>
+          <option value="cieno">Cieno</option>
+          <option value="constructo">Constructo</option>
+          <option value="dragón">Dragón</option>
+          <option value="elemental">Elemental</option>
+          <option value="feérica">Feérica</option>
+          <option value="gigante">Gigante</option>
+          <option value="humanoide">Humanoide</option>
+          <option value="infernal">Infernal</option>
+          <option value="monstruo">Monstruo</option>
+          <option value="monstruoso">Monstruoso</option>
+          <option value="no-muerto">No-muerto</option>
+          <option value="planta">Planta</option>
+        </select>
+      </div>
+      <div id="monster_results" style="max-height:200px;overflow-y:auto;font-size:0.82rem"></div>
+    </div>
+
+    <!-- Bloque de stats del monstruo seleccionado -->
+    <div id="monster_stat_block" style="display:none" class="card" style="margin-bottom:10px">
+      <div id="monster_stat_content"></div>
+      <div style="display:flex;gap:8px;margin-top:10px">
+        <button class="btn-add" onclick="addMonsterToEncounter()" style="flex:1">⚔ Añadir al Tracker</button>
+        <button class="btn-add" onclick="addMonsterToXPCalc()" style="flex:1;background:rgba(41,128,185,0.15);border-color:#5bb3e8;color:#5bb3e8">🧮 Añadir a Calculadora</button>
+      </div>
+    </div>
+
     <p class="section-title">⚔ Tracker de Encuentro</p>
     <div class="card">
       <div style="display:flex;gap:8px;margin-bottom:10px;flex-wrap:wrap">
@@ -4310,6 +4382,139 @@ function loadDiceHistory() {
   } catch(e) {}
 }
 
+// ── BUSCADOR DE MONSTRUOS ─────────────────────────────────
+var selectedMonster = null;
+
+function filterMonsters() {
+  if (typeof MONSTERS_DATA === 'undefined') {
+    document.getElementById('monster_results').innerHTML = '<p style="color:var(--text3);text-align:center;font-size:0.8rem">Cargando datos de monstruos...</p>';
+    return;
+  }
+  var q    = (document.getElementById('monster_search').value || '').toLowerCase();
+  var nd   = document.getElementById('monster_nd_filter').value;
+  var type = document.getElementById('monster_type_filter').value.toLowerCase();
+
+  var results = MONSTERS_DATA.filter(function(m) {
+    var matchName = !q || m.name.toLowerCase().indexOf(q) !== -1;
+    var matchND   = !nd || m.nd === nd;
+    var matchType = !type || m.type.toLowerCase().indexOf(type) !== -1;
+    return matchName && matchND && matchType;
+  });
+
+  var container = document.getElementById('monster_results');
+  if (!results.length) {
+    container.innerHTML = '<p style="color:var(--text3);text-align:center;padding:12px;font-size:0.8rem">Sin resultados</p>';
+    return;
+  }
+
+  // Show max 50 results
+  var shown = results.slice(0, 50);
+  container.innerHTML = shown.map(function(m) {
+    var ndColor = ndToColor(m.nd);
+    return '<div class="monster-result-item" onclick="selectMonster(' + JSON.stringify(m).replace(/"/g,'&quot;') + ')">'
+      + '<span class="monster-result-name">' + m.name + '</span>'
+      + '<span class="monster-result-meta">'
+      + '<span style="color:' + ndColor + ';font-weight:bold">ND ' + m.nd + '</span>'
+      + ' · ' + m.type + ' · ' + m.size
+      + '</span></div>';
+  }).join('');
+  if (results.length > 50) {
+    container.innerHTML += '<p style="color:var(--text3);text-align:center;font-size:0.72rem;padding:6px">...y ' + (results.length-50) + ' más. Refina la búsqueda.</p>';
+  }
+}
+
+function ndToColor(nd) {
+  var n = parseFloat(nd) || 0;
+  if (nd === '1/8' || nd === '1/4') n = 0.25;
+  if (nd === '1/2') n = 0.5;
+  if (n === 0) return 'var(--text3)';
+  if (n <= 0.5) return '#7ec8e3';
+  if (n <= 4) return '#5cb85c';
+  if (n <= 10) return '#f0ad4e';
+  if (n <= 16) return '#e67e22';
+  return '#e74c3c';
+}
+
+function selectMonster(m) {
+  selectedMonster = m;
+  var block = document.getElementById('monster_stat_block');
+  var content = document.getElementById('monster_stat_content');
+  if (!block || !content) return;
+
+  var ndColor = ndToColor(m.nd);
+  var html = '<div style="border-bottom:2px solid var(--gold);padding-bottom:8px;margin-bottom:8px">'
+    + '<div style="font-family:var(--font-title);font-size:1.1rem;color:var(--gold)">' + m.name + '</div>'
+    + '<div style="font-size:0.78rem;color:var(--text3);font-style:italic">' + m.size + ' ' + m.type + ' · <span style="color:' + ndColor + ';font-weight:bold">ND ' + m.nd + ' (' + m.xp.toLocaleString() + ' XP)</span></div>'
+    + '</div>'
+    // AC, HP, Speed
+    + '<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-bottom:8px">'
+    + '<div style="text-align:center"><div style="font-size:0.65rem;color:var(--gold2);letter-spacing:1px">CA</div><div style="font-family:var(--font-title);font-size:1.1rem">' + m.ac + '</div></div>'
+    + '<div style="text-align:center"><div style="font-size:0.65rem;color:var(--gold2);letter-spacing:1px">PG</div><div style="font-family:var(--font-title);font-size:1.1rem">' + m.hp + '</div></div>'
+    + '<div style="text-align:center"><div style="font-size:0.65rem;color:var(--gold2);letter-spacing:1px">VEL.</div><div style="font-size:0.8rem">' + m.speed + '</div></div>'
+    + '</div>'
+    // Abilities
+    + '<div style="display:grid;grid-template-columns:repeat(6,1fr);gap:4px;background:var(--bg3);border-radius:var(--radius);padding:8px;margin-bottom:8px;text-align:center">'
+    + statBox('FUE', m.str) + statBox('DES', m.dex) + statBox('CON', m.con)
+    + statBox('INT', m.int) + statBox('SAB', m.wis) + statBox('CAR', m.cha)
+    + '</div>';
+
+  if (m.saves)   html += infoRow('Salvaciones', m.saves);
+  if (m.skills)  html += infoRow('Habilidades', m.skills);
+  if (m.immune)  html += infoRow('Inmunidades', m.immune);
+  if (m.resist)  html += infoRow('Resistencias', m.resist);
+  if (m.senses)  html += infoRow('Sentidos', m.senses);
+  if (m.langs)   html += infoRow('Idiomas', m.langs);
+  if (m.traits)  html += '<div style="margin:6px 0;font-size:0.8rem"><strong style="color:var(--gold2)">Rasgos: </strong>' + m.traits + '</div>';
+  if (m.actions) html += '<div style="margin:6px 0;font-size:0.8rem"><strong style="color:var(--gold2)">Acciones: </strong>' + m.actions + '</div>';
+
+  content.innerHTML = html;
+  block.style.display = 'block';
+  block.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+
+function statBox(label, val) {
+  var mod = Math.floor((val - 10) / 2);
+  var sign = mod >= 0 ? '+' : '';
+  return '<div><div style="font-size:0.62rem;color:var(--gold2)">' + label + '</div>'
+    + '<div style="font-weight:bold">' + val + '</div>'
+    + '<div style="font-size:0.72rem;color:var(--text3)">(' + sign + mod + ')</div></div>';
+}
+
+function infoRow(label, val) {
+  return '<div style="font-size:0.78rem;margin:3px 0"><strong style="color:var(--gold2)">' + label + ':</strong> ' + val + '</div>';
+}
+
+function addMonsterToEncounter() {
+  if (!selectedMonster) return;
+  // Add to encounter tracker
+  var initRoll = Math.ceil(Math.random() * 20) + Math.floor((selectedMonster.dex - 10) / 2);
+  var hpMax    = parseInt(selectedMonster.hp) || 10;
+  dmData.encounter = dmData.encounter || [];
+  dmData.encounter.push({
+    name: selectedMonster.name,
+    hp: hpMax, hpMax: hpMax,
+    ac: selectedMonster.ac,
+    init: initRoll, isPlayer: false
+  });
+  renderEncounter();
+  saveDMData();
+  showToast(selectedMonster.name + ' añadido al tracker (init: ' + initRoll + ')');
+  // Open encounter section
+  toggleDMRef('ref_actions'); // just to open nearby
+}
+
+function addMonsterToXPCalc() {
+  if (!selectedMonster) return;
+  var nd = selectedMonster.nd;
+  document.getElementById('xp_nd').value = nd;
+  document.getElementById('xp_count').value = 1;
+  // Open XP calc panel
+  var panel = document.getElementById('ref_xp_calc');
+  if (panel) panel.style.display = 'block';
+  addMonsterXP();
+  showToast(selectedMonster.name + ' añadido a la calculadora (ND ' + nd + ')');
+}
+
 // ── ENCOUNTER TRACKER ─────────────────────────────────────
 function addEncounterCreature() {
   var name = document.getElementById('enc_name').value.trim();
@@ -6222,6 +6427,7 @@ window.addEventListener('load', function() {
 <script src="subclasses-data.js"></script>
 <script src="magic-items-data.js"></script>
 <script src="spells-data.js"></script>
+<script src="monsters-data.js"></script>
 
 </body>
 </html>
