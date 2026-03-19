@@ -2187,10 +2187,58 @@ input[type="number"] { text-align: center; }
     <!-- PANTALLA DE REFERENCIA -->
     <p class="section-title">📋 Pantalla de Referencia</p>
 
+    <!-- Timer de encuentro -->
+    <div class="card" style="margin-bottom:10px;background:rgba(41,128,185,0.07);border-color:rgba(41,128,185,0.3)">
+      <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+        <div style="font-family:var(--font-title);font-size:2rem;color:#5bb3e8;min-width:80px;text-align:center" id="dm_timer_display">00:00</div>
+        <div style="display:flex;gap:6px;flex-wrap:wrap">
+          <button class="btn-sm" onclick="dmTimerToggle()" id="dm_timer_btn" style="border-color:#5bb3e8;color:#5bb3e8;min-width:70px">▶ Iniciar</button>
+          <button class="btn-sm" onclick="dmTimerReset()" style="font-size:0.68rem">↺ Reset</button>
+          <button class="btn-sm" onclick="dmTimerLap()" style="font-size:0.68rem">⚑ Marcar turno</button>
+        </div>
+        <div id="dm_timer_laps" style="font-size:0.72rem;color:var(--text3);flex:1"></div>
+      </div>
+    </div>
+
+    <!-- Calculadora XP -->
+    <div class="card" style="margin-bottom:10px">
+      <div class="dm-ref-title" onclick="toggleDMRef('ref_xp_calc')">🧮 Calculadora de Encuentro <span style="float:right">▾</span></div>
+      <div id="ref_xp_calc" class="dm-ref-body" style="display:none">
+        <div style="font-size:0.78rem;color:var(--text3);margin-bottom:8px">Introduce el nivel y número de jugadores, luego añade monstruos por ND.</div>
+        <div style="display:flex;gap:8px;margin-bottom:10px;flex-wrap:wrap">
+          <div><label style="font-size:0.72rem">Jugadores</label><input type="number" id="xp_players" value="4" min="1" max="8" style="width:60px" oninput="calcEncounter()"></div>
+          <div><label style="font-size:0.72rem">Nivel promedio</label><input type="number" id="xp_level" value="1" min="1" max="20" style="width:60px" oninput="calcEncounter()"></div>
+        </div>
+        <div style="display:flex;gap:8px;margin-bottom:8px;flex-wrap:wrap">
+          <input type="text" id="xp_nd" placeholder="ND (ej: 1/4, 1, 5)" style="width:120px;font-size:0.82rem">
+          <input type="number" id="xp_count" value="1" min="1" style="width:60px">
+          <button class="btn-sm" onclick="addMonsterXP()">+ Añadir</button>
+          <button class="btn-sm" onclick="clearMonsterXP()" style="color:var(--text3)">✕ Limpiar</button>
+        </div>
+        <div id="xp_monster_list" style="margin-bottom:8px;font-size:0.82rem"></div>
+        <div id="xp_result" style="text-align:center;padding:8px;border-radius:var(--radius);background:var(--bg3)">
+          <span style="color:var(--text3);font-size:0.82rem">Añade monstruos para calcular</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Notas rápidas con fecha -->
+    <div class="card" style="margin-bottom:10px">
+      <div class="dm-ref-title" onclick="toggleDMRef('ref_quicknotes')">📝 Notas Rápidas de Sesión <span style="float:right">▾</span></div>
+      <div id="ref_quicknotes" class="dm-ref-body" style="display:none">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+          <span style="font-size:0.72rem;color:var(--text3)" id="quicknote_date"></span>
+          <button class="btn-sm" onclick="addQuickNote()" style="font-size:0.68rem">+ Añadir nota</button>
+        </div>
+        <textarea class="notes-area" id="quicknote_input" style="min-height:60px;margin-bottom:8px" placeholder="Nota rápida del momento..."></textarea>
+        <div id="quicknote_list"></div>
+      </div>
+    </div>
+
     <!-- Acciones en combate -->
     <div class="card" style="margin-bottom:10px">
       <div class="dm-ref-title" onclick="toggleDMRef('ref_actions')">⚔ Acciones en Combate <span style="float:right">▾</span></div>
-      <div id="ref_actions" class="dm-ref-body">
+      <div id="ref_actions" class="dm-ref-body" style="display:none">
         <table class="dm-ref-table">
           <tr><td>Atacar</td><td>Haz una tirada de ataque</td></tr>
           <tr><td>Cargar</td><td>Muévete hasta velocidad y ataca</td></tr>
@@ -2204,6 +2252,54 @@ input[type="number"] { text-align: center; }
           <tr><td>Usar objeto</td><td>Interactuar con objeto del entorno</td></tr>
           <tr><td>Correr</td><td>+velocidad de movimiento este turno</td></tr>
         </table>
+      </div>
+    </div>
+
+    <!-- Tiempo de lanzamiento y concentración -->
+    <div class="card" style="margin-bottom:10px">
+      <div class="dm-ref-title" onclick="toggleDMRef('ref_casting')">🔮 Lanzamiento y Concentración <span style="float:right">▾</span></div>
+      <div id="ref_casting" class="dm-ref-body" style="display:none">
+        <table class="dm-ref-table">
+          <tr><th>Tiempo</th><th>Descripción</th></tr>
+          <tr><td>1 acción</td><td>Lo más común. Se lanza en tu turno</td></tr>
+          <tr><td>Acción adicional</td><td>Solo trucos de nivel 0 o hechizos específicos</td></tr>
+          <tr><td>Reacción</td><td>Se lanza en respuesta a un desencadenante</td></tr>
+          <tr><td>1 minuto</td><td>10 rondas de combate</td></tr>
+          <tr><td>Ritual (10 min)</td><td>No gasta espacio de hechizo, +10 min al tiempo</td></tr>
+        </table>
+        <div style="margin-top:10px">
+          <div style="font-size:0.78rem;font-weight:bold;color:var(--gold2);margin-bottom:6px">Concentración</div>
+          <table class="dm-ref-table">
+            <tr><td>Daño recibido</td><td>TS CON CD = 10 o la mitad del daño (lo que sea mayor)</td></tr>
+            <tr><td>Incapacitado</td><td>Concentración rota automáticamente</td></tr>
+            <tr><td>Muerto</td><td>Concentración rota automáticamente</td></tr>
+            <tr><td>Rasgo: Guerra Mágica</td><td>Ventaja en TS de concentración</td></tr>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- Cobertura y terreno -->
+    <div class="card" style="margin-bottom:10px">
+      <div class="dm-ref-title" onclick="toggleDMRef('ref_cover')">🛡 Cobertura y Terreno <span style="float:right">▾</span></div>
+      <div id="ref_cover" class="dm-ref-body" style="display:none">
+        <table class="dm-ref-table">
+          <tr><th>Cobertura</th><th>Efecto</th></tr>
+          <tr><td>Media cobertura</td><td>+2 a CA y TS de DES</td></tr>
+          <tr><td>3/4 cobertura</td><td>+5 a CA y TS de DES</td></tr>
+          <tr><td>Cobertura total</td><td>No puede ser objetivo directo</td></tr>
+        </table>
+        <div style="margin-top:10px">
+          <div style="font-size:0.78rem;font-weight:bold;color:var(--gold2);margin-bottom:6px">Terreno Difícil</div>
+          <table class="dm-ref-table">
+            <tr><td>Moverse en terreno difícil</td><td>Cuesta 2 pies de movimiento por pie</td></tr>
+            <tr><td>Escalar</td><td>Cuesta 2 pies por pie (sin velocidad escalar)</td></tr>
+            <tr><td>Nadar</td><td>Cuesta 2 pies por pie (sin velocidad nado)</td></tr>
+            <tr><td>Gatear</td><td>Cuesta 2 pies por pie</td></tr>
+            <tr><td>Oscuridad total</td><td>Ataques con desventaja, efectivamente ciego</td></tr>
+            <tr><td>Penumbra</td><td>Desventaja en Percepción basada en vista</td></tr>
+          </table>
+        </div>
       </div>
     </div>
 
@@ -2249,6 +2345,78 @@ input[type="number"] { text-align: center; }
       </div>
     </div>
 
+    <!-- Precios y servicios -->
+    <div class="card" style="margin-bottom:10px">
+      <div class="dm-ref-title" onclick="toggleDMRef('ref_prices')">💰 Precios y Servicios <span style="float:right">▾</span></div>
+      <div id="ref_prices" class="dm-ref-body" style="display:none">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+          <div>
+            <div style="font-size:0.72rem;color:var(--gold2);font-weight:bold;margin-bottom:4px">🏨 Hospedaje (por noche)</div>
+            <table class="dm-ref-table">
+              <tr><td>Miserable</td><td>7 pc</td></tr>
+              <tr><td>Pobre</td><td>1 pp</td></tr>
+              <tr><td>Modesto</td><td>5 pp</td></tr>
+              <tr><td>Cómodo</td><td>8 pp</td></tr>
+              <tr><td>Próspero</td><td>2 po</td></tr>
+              <tr><td>Aristocrático</td><td>4 po</td></tr>
+            </table>
+          </div>
+          <div>
+            <div style="font-size:0.72rem;color:var(--gold2);font-weight:bold;margin-bottom:4px">⛪ Servicios</div>
+            <table class="dm-ref-table">
+              <tr><td>Curar heridas (templo)</td><td>10 po</td></tr>
+              <tr><td>Restauración menor</td><td>40 po</td></tr>
+              <tr><td>Restauración mayor</td><td>450 po</td></tr>
+              <tr><td>Revivir</td><td>300 po</td></tr>
+              <tr><td>Resurrección</td><td>1.000 po</td></tr>
+              <tr><td>Identificar objeto</td><td>20 po</td></tr>
+            </table>
+          </div>
+          <div>
+            <div style="font-size:0.72rem;color:var(--gold2);font-weight:bold;margin-bottom:4px">🚢 Transporte</div>
+            <table class="dm-ref-table">
+              <tr><td>Carruaje (por milla)</td><td>3 pc</td></tr>
+              <tr><td>Barca fluvial (por milla)</td><td>1 pc</td></tr>
+              <tr><td>Barco (por milla)</td><td>1 pp</td></tr>
+              <tr><td>Pasaje océano (por día)</td><td>1 po</td></tr>
+              <tr><td>Caballo de monta</td><td>75 po</td></tr>
+            </table>
+          </div>
+          <div>
+            <div style="font-size:0.72rem;color:var(--gold2);font-weight:bold;margin-bottom:4px">🍺 Comida y bebida</div>
+            <table class="dm-ref-table">
+              <tr><td>Cerveza (jarra)</td><td>4 pc</td></tr>
+              <tr><td>Vino (botella)</td><td>2 pp</td></tr>
+              <tr><td>Banquete (por pers.)</td><td>10 po</td></tr>
+              <tr><td>Ración de viaje</td><td>5 pp</td></tr>
+              <tr><td>Comida modesta</td><td>3 pp</td></tr>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Encuentros aleatorios -->
+    <div class="card" style="margin-bottom:10px">
+      <div class="dm-ref-title" onclick="toggleDMRef('ref_random')">🎲 Encuentros Aleatorios <span style="float:right">▾</span></div>
+      <div id="ref_random" class="dm-ref-body" style="display:none">
+        <div style="margin-bottom:10px;display:flex;gap:8px;flex-wrap:wrap">
+          <select id="random_terrain" style="flex:1;font-size:0.82rem">
+            <option value="road">Camino</option>
+            <option value="forest">Bosque</option>
+            <option value="dungeon">Mazmorra</option>
+            <option value="city">Ciudad</option>
+            <option value="mountain">Montaña</option>
+            <option value="sea">Mar</option>
+          </select>
+          <button class="btn-roll" onclick="rollRandomEncounter()">🎲 Tirar encuentro</button>
+        </div>
+        <div id="random_encounter_result" style="font-size:0.88rem;color:var(--text2);min-height:40px;padding:8px;background:var(--bg3);border-radius:var(--radius)">
+          Elige terreno y tira para generar un encuentro aleatorio.
+        </div>
+      </div>
+    </div>
+
     <!-- Descansos -->
     <div class="card" style="margin-bottom:10px">
       <div class="dm-ref-title" onclick="toggleDMRef('ref_rests')">🌙 Descansos <span style="float:right">▾</span></div>
@@ -2269,7 +2437,7 @@ input[type="number"] { text-align: center; }
             <ul style="font-size:0.82rem;color:var(--text2);padding-left:16px;line-height:1.7">
               <li>Todos los PG</li>
               <li>Todos los espacios de hechizo</li>
-              <li>Todos los Dados de Golpe (máx: la mitad)</li>
+              <li>Dados de Golpe (máx: la mitad)</li>
               <li>Rabia (Bárbaro)</li>
               <li>Conjurar la divinidad (Clérigo)</li>
               <li>Forma salvaje (Druida)</li>
@@ -2294,7 +2462,7 @@ input[type="number"] { text-align: center; }
       </div>
     </div>
 
-    <!-- Movimiento y distancias -->
+    <!-- Movimiento -->
     <div class="card" style="margin-bottom:10px">
       <div class="dm-ref-title" onclick="toggleDMRef('ref_movement')">🗺 Movimiento y Distancias <span style="float:right">▾</span></div>
       <div id="ref_movement" class="dm-ref-body" style="display:none">
@@ -2305,14 +2473,28 @@ input[type="number"] { text-align: center; }
           <tr><td>Lento</td><td>3 km</td><td>24 km</td><td>Sigilo posible</td></tr>
         </table>
         <div style="margin-top:8px;font-size:0.82rem;color:var(--text2)">
-          <strong style="color:var(--gold2)">Escalar/Nadar:</strong> 2 pies de movimiento por cada 1 pie<br>
-          <strong style="color:var(--gold2)">Salto largo:</strong> FUE pies (con carrera) o FUE/2 (sin carrera)<br>
+          <strong style="color:var(--gold2)">Escalar/Nadar:</strong> 2 pies por cada pie<br>
+          <strong style="color:var(--gold2)">Salto largo:</strong> FUE pies (con carrera) o FUE/2 (sin)<br>
           <strong style="color:var(--gold2)">Salto alto:</strong> 3 + mod FUE pies (con carrera)
         </div>
       </div>
     </div>
 
-    <!-- Tabla de encuentros por nivel -->
+    <!-- Magia Salvaje -->
+    <div class="card" style="margin-bottom:10px">
+      <div class="dm-ref-title" onclick="toggleDMRef('ref_wild_magic')">✨ Magia Salvaje <span style="float:right">▾</span></div>
+      <div id="ref_wild_magic" class="dm-ref-body" style="display:none">
+        <div style="text-align:center;margin-bottom:10px">
+          <button class="btn-roll" onclick="rollWildMagic()">🎲 Tirar d100</button>
+          <div id="wild_magic_result" style="margin-top:8px;font-size:0.9rem;color:var(--gold2);font-weight:bold;min-height:24px"></div>
+        </div>
+        <div style="max-height:200px;overflow-y:auto">
+          <table class="dm-ref-table" id="wild_magic_table"></table>
+        </div>
+      </div>
+    </div>
+
+    <!-- XP por ND -->
     <div class="card" style="margin-bottom:10px">
       <div class="dm-ref-title" onclick="toggleDMRef('ref_xp')">⚔ XP por Desafío <span style="float:right">▾</span></div>
       <div id="ref_xp" class="dm-ref-body" style="display:none">
@@ -3738,6 +3920,396 @@ function toggleDMRef(id) {
   el.style.display = el.style.display === 'none' ? 'block' : 'none';
 }
 
+// ── TIMER DE ENCUENTRO ────────────────────────────────────
+var dmTimerInterval = null;
+var dmTimerSeconds  = 0;
+var dmTimerRunning  = false;
+var dmTimerLaps     = [];
+
+function dmTimerToggle() {
+  var btn = document.getElementById('dm_timer_btn');
+  if (dmTimerRunning) {
+    clearInterval(dmTimerInterval);
+    dmTimerRunning = false;
+    if (btn) { btn.textContent = '▶ Continuar'; }
+  } else {
+    dmTimerRunning = true;
+    if (btn) { btn.textContent = '⏸ Pausar'; }
+    dmTimerInterval = setInterval(function() {
+      dmTimerSeconds++;
+      var m = Math.floor(dmTimerSeconds / 60);
+      var s = dmTimerSeconds % 60;
+      var disp = document.getElementById('dm_timer_display');
+      if (disp) disp.textContent = (m < 10 ? '0' : '') + m + ':' + (s < 10 ? '0' : '') + s;
+    }, 1000);
+  }
+}
+
+function dmTimerReset() {
+  clearInterval(dmTimerInterval);
+  dmTimerRunning = false;
+  dmTimerSeconds = 0;
+  dmTimerLaps    = [];
+  var disp = document.getElementById('dm_timer_display');
+  var btn  = document.getElementById('dm_timer_btn');
+  var laps = document.getElementById('dm_timer_laps');
+  if (disp) disp.textContent = '00:00';
+  if (btn)  btn.textContent  = '▶ Iniciar';
+  if (laps) laps.textContent = '';
+}
+
+function dmTimerLap() {
+  var m = Math.floor(dmTimerSeconds / 60);
+  var s = dmTimerSeconds % 60;
+  var t = (m < 10 ? '0' : '') + m + ':' + (s < 10 ? '0' : '') + s;
+  dmTimerLaps.push('T' + dmTimerLaps.length + ': ' + t);
+  if (dmTimerLaps.length > 8) dmTimerLaps.shift();
+  var laps = document.getElementById('dm_timer_laps');
+  if (laps) laps.textContent = dmTimerLaps.join('  |  ');
+}
+
+// ── CALCULADORA XP ────────────────────────────────────────
+var xpMonsters = [];
+
+var XP_BY_ND = {
+  '0':0.1,'1/8':25,'1/4':50,'1/2':100,
+  '1':200,'2':450,'3':700,'4':1100,'5':1800,
+  '6':2300,'7':2900,'8':3900,'9':5000,'10':5900,
+  '11':7200,'12':8400,'13':10000,'14':11500,'15':13000,
+  '16':15000,'17':18000,'18':20000,'19':22000,'20':25000
+};
+
+var XP_THRESHOLDS = [
+  [25,50,75,100],[50,100,150,200],[75,150,225,400],
+  [125,250,375,500],[250,500,750,1100],[300,600,900,1400],
+  [350,750,1100,1700],[450,900,1400,2100],[550,1100,1600,2400],
+  [600,1200,1900,2800],[800,1600,2400,3600],[1000,2000,3000,4500],
+  [1100,2200,3400,5100],[1250,2500,3800,5700],[1400,2800,4300,6400],
+  [1600,3200,4800,7200],[2000,3900,5900,8800],[2100,4200,6300,9500],
+  [2400,4900,7300,10900],[2800,5700,8500,12700]
+];
+
+function addMonsterXP() {
+  var nd    = document.getElementById('xp_nd').value.trim();
+  var count = parseInt(document.getElementById('xp_count').value) || 1;
+  if (!nd || !XP_BY_ND[nd]) { alert('ND no válido. Usa: 0, 1/8, 1/4, 1/2, 1, 2 ... 20'); return; }
+  xpMonsters.push({ nd: nd, count: count, xpEach: XP_BY_ND[nd] });
+  document.getElementById('xp_nd').value = '';
+  renderXPMonsters();
+  calcEncounter();
+}
+
+function removeMonsterXP(i) {
+  xpMonsters.splice(i, 1);
+  renderXPMonsters();
+  calcEncounter();
+}
+
+function clearMonsterXP() {
+  xpMonsters = [];
+  renderXPMonsters();
+  calcEncounter();
+}
+
+function renderXPMonsters() {
+  var list = document.getElementById('xp_monster_list');
+  if (!list) return;
+  if (!xpMonsters.length) { list.innerHTML = ''; return; }
+  list.innerHTML = xpMonsters.map(function(m, i) {
+    return '<div style="display:flex;justify-content:space-between;padding:3px 0;border-bottom:1px solid var(--bg4)">'
+      + '<span>ND ' + m.nd + ' x' + m.count + '</span>'
+      + '<span style="color:var(--text3)">' + (m.xpEach * m.count).toLocaleString() + ' XP</span>'
+      + '<button class="btn-remove" onclick="removeMonsterXP(' + i + ')">✕</button></div>';
+  }).join('');
+}
+
+function calcEncounter() {
+  var result = document.getElementById('xp_result');
+  if (!result || !xpMonsters.length) {
+    if (result) result.innerHTML = '<span style="color:var(--text3);font-size:0.82rem">Añade monstruos para calcular</span>';
+    return;
+  }
+  var players = parseInt(document.getElementById('xp_players').value) || 4;
+  var level   = parseInt(document.getElementById('xp_level').value) || 1;
+  var lvlIdx  = Math.min(level - 1, 19);
+
+  // Total raw XP
+  var totalXP = xpMonsters.reduce(function(s, m) { return s + m.xpEach * m.count; }, 0);
+
+  // Multiplier based on number of monsters
+  var totalMonsters = xpMonsters.reduce(function(s, m) { return s + m.count; }, 0);
+  var mult = totalMonsters === 1 ? 1 : totalMonsters === 2 ? 1.5
+    : totalMonsters <= 6 ? 2 : totalMonsters <= 10 ? 2.5
+    : totalMonsters <= 14 ? 3 : 4;
+  if (players < 3) mult *= 1.5;
+  if (players > 5) mult *= 0.5;
+
+  var adjustedXP = Math.floor(totalXP * mult);
+  var thresh = XP_THRESHOLDS[lvlIdx];
+  var totalThresh = thresh.map(function(t) { return t * players; });
+
+  var diff, color;
+  if (adjustedXP < totalThresh[0])      { diff = 'Trivial'; color = '#aaa'; }
+  else if (adjustedXP < totalThresh[1]) { diff = 'Fácil';   color = '#5cb85c'; }
+  else if (adjustedXP < totalThresh[2]) { diff = 'Medio';   color = '#f0ad4e'; }
+  else if (adjustedXP < totalThresh[3]) { diff = 'Difícil'; color = '#e67e22'; }
+  else                                   { diff = '💀 Mortal'; color = '#e74c3c'; }
+
+  result.innerHTML = '<div style="font-family:var(--font-title);font-size:1.4rem;color:' + color + '">' + diff + '</div>'
+    + '<div style="font-size:0.78rem;color:var(--text3);margin-top:4px">'
+    + 'XP base: ' + totalXP.toLocaleString() + ' × ' + mult + ' = <strong style="color:var(--text)">' + adjustedXP.toLocaleString() + ' XP ajustado</strong></div>'
+    + '<div style="font-size:0.72rem;color:var(--text3);margin-top:2px">'
+    + 'Umbrales (' + players + ' jugadores nv.' + level + '): '
+    + 'Fácil ' + totalThresh[1].toLocaleString() + ' | Medio ' + totalThresh[2].toLocaleString()
+    + ' | Difícil ' + totalThresh[3].toLocaleString() + '</div>';
+}
+
+// ── NOTAS RÁPIDAS ─────────────────────────────────────────
+var quickNotes = [];
+
+function initQuickNotes() {
+  try {
+    var saved = localStorage.getItem('dnd5e_quicknotes');
+    quickNotes = saved ? JSON.parse(saved) : [];
+  } catch(e) { quickNotes = []; }
+  renderQuickNotes();
+  // Show today's date
+  var dateEl = document.getElementById('quicknote_date');
+  if (dateEl) {
+    var d = new Date();
+    dateEl.textContent = d.toLocaleDateString('es-MX', { weekday:'long', year:'numeric', month:'long', day:'numeric' });
+  }
+}
+
+function addQuickNote() {
+  var input = document.getElementById('quicknote_input');
+  if (!input || !input.value.trim()) return;
+  var d = new Date();
+  var ts = d.toLocaleTimeString('es-MX', { hour:'2-digit', minute:'2-digit' });
+  quickNotes.unshift({ text: input.value.trim(), time: ts });
+  if (quickNotes.length > 50) quickNotes.pop();
+  input.value = '';
+  try { localStorage.setItem('dnd5e_quicknotes', JSON.stringify(quickNotes)); } catch(e) {}
+  renderQuickNotes();
+}
+
+function removeQuickNote(i) {
+  quickNotes.splice(i, 1);
+  try { localStorage.setItem('dnd5e_quicknotes', JSON.stringify(quickNotes)); } catch(e) {}
+  renderQuickNotes();
+}
+
+function renderQuickNotes() {
+  var list = document.getElementById('quicknote_list');
+  if (!list) return;
+  if (!quickNotes.length) { list.innerHTML = '<p style="color:var(--text3);font-size:0.8rem;text-align:center">Sin notas aún</p>'; return; }
+  list.innerHTML = quickNotes.map(function(n, i) {
+    return '<div style="display:flex;gap:8px;align-items:flex-start;padding:5px 0;border-bottom:1px solid var(--bg4)">'
+      + '<span style="font-size:0.68rem;color:var(--text3);white-space:nowrap;padding-top:2px">' + n.time + '</span>'
+      + '<span style="flex:1;font-size:0.82rem">' + n.text + '</span>'
+      + '<button class="btn-remove" onclick="removeQuickNote(' + i + ')">✕</button></div>';
+  }).join('');
+}
+
+// ── ENCUENTROS ALEATORIOS ─────────────────────────────────
+var RANDOM_ENCOUNTERS = {
+  road: [
+    'Mercaderes con una caravana de 3 carros y 8 guardias','Bandidos (1d4+2) tendiendo una emboscada',
+    'Un mensajero real con noticias urgentes','Peregrinos (2d6) camino a un templo',
+    'Un noble en litera con escolta de 4 soldados','Un carro volcado con mercancías dispersas',
+    'Patrulla militar de 6 soldados inspeccionando viajeros','Un bardo itinerante buscando compañía',
+    'Refugiados (3d6) huyendo de algo al norte','Un monje errante con votos de silencio',
+    'Cazadores de recompensas buscando a un fugitivo','Un carretero cuya rueda se rompió'
+  ],
+  forest: [
+    'Lobos (1d4+1) siguiendo al grupo desde hace un rato','Un druida meditando junto a un árbol antiguo',
+    'Trampa de cazador: foso oculto en el camino','Hadas jugueteas que roban un objeto pequeño',
+    'Un claro con setas mágicas de colores brillantes','Goblin explorador que huye al ver al grupo',
+    'Árbol centenario con runas élficas antiguas','Cueva habitada: rastros de oso pardo',
+    'Campamento abandonado con señales de lucha','Río de agua cristalina con peces plateados',
+    'Bandidos del bosque (2d4) en posición ventajosa','Una cabaña solitaria con humo en la chimenea'
+  ],
+  dungeon: [
+    'Patrulla de 1d4+2 orcos con un jefe','Trampa de dardos envenenados en el corredor',
+    'Sala inundada de agua hasta las rodillas','Puerta con cerradura rúnica y acertijo',
+    'Cadáveres de aventureros con equipo dañado','Hongo gigante con esporas soporíferas',
+    'Celda con prisionero herido que pide ayuda','Tesoro falso con trampa de fuego',
+    'Estatua que cobra vida si la tocan','Túnel que se estrecha: deben quitarse armadura',
+    'Altar oscuro con ofrendas recientes','Sala de trono vacía con un trono de obsidiana'
+  ],
+  city: [
+    'Carteristas intentan robar una bolsa al descuido','Disturbio en el mercado: dos mercaderes peleando',
+    'Un niño pide ayuda: su gato está en el tejado','Guardia interroga al grupo sobre incidente cercano',
+    'Subasta de un objeto misterioso en callejón','Monje borracho con información valiosa',
+    'Incendio en una taberna del barrio pobre','Funeral noble: las calles están cerradas',
+    'Mago ambulante vende pociones de dudosa calidad','Curandero pide ayuda para conseguir ingrediente raro',
+    'Reclutador militar ofrece paga generosa','Runaway horse: carruaje sin control en la calle'
+  ],
+  mountain: [
+    'Avalancha de rocas bloqueando el paso','Griffon (o wyvern) sobrevolando en busca de presa',
+    'Cueva con familia de osos hibernando','Ermitaño con décadas de sabiduría local',
+    'Puente de cuerda sobre abismo de 60m','Mina abandonada con peligros estructurales',
+    'Campamento de gigantes de las colinas','Tormenta de nieve repentina: visibilidad cero',
+    'Altar de piedra con ofrendas de montañeses','Deslizamiento reciente con camino destruido',
+    'Aguila gigante con cría caída del nido','Enanos explorando en busca de filón'
+  ],
+  sea: [
+    'Barco pirata abordando por el costado','Tormenta repentina: TS DES CD15 o caer al mar',
+    'Ballena gigante que roza el casco','Isla desierta con restos de naufragio',
+    'Sirenas cantando desde las rocas','Barco fantasma navegando sin tripulación',
+    'Mercante averiado pidiendo auxilio','Banco de niebla espesa: desorientación',
+    'Kraken tentáculo golpea el casco','Faro en costa no marcada en mapas',
+    'Triton emergiendo con mensaje urgente','Corsarios bajo bandera neutral'
+  ]
+};
+
+function rollRandomEncounter() {
+  var terrain = document.getElementById('random_terrain').value;
+  var list    = RANDOM_ENCOUNTERS[terrain] || RANDOM_ENCOUNTERS.road;
+  var roll    = Math.floor(Math.random() * list.length);
+  var result  = document.getElementById('random_encounter_result');
+  if (result) {
+    result.innerHTML = '<strong style="color:var(--gold2)">🎲 ' + (roll+1) + ':</strong> ' + list[roll];
+  }
+}
+
+// ── MAGIA SALVAJE ─────────────────────────────────────────
+var WILD_MAGIC = [
+  'Al lanzar un hechizo de nivel 1 o superior en el siguiente minuto, lanza otro hechizo de nivel 1 igual.',
+  'Te transformas en una planta en maceta hasta el inicio de tu siguiente turno.',
+  'Durante 1 minuto puedes ver invisible a 30 pies.',
+  'Lanzas bola de fuego de 3er nivel centrada en ti mismo.',
+  'Lanzas magia de hechicero en ti mismo.',
+  'Teleportación de 60 pies a un espacio aleatorio visible.',
+  'Los próximos 1d6 hechizos que lances no tienen componente verbal.',
+  'Pierdes la capacidad de hablar. Recuperas la voz en 1 minuto.',
+  'Aparece una criatura aleatoria a 60 pies. Actúa en la siguiente ronda.',
+  'Tienes ventaja en tiradas de ataque durante 1 minuto.',
+  'Tu pelo cae. Vuelve a crecer en 24 horas.',
+  'Lanzas comprensión de idiomas.',
+  'Un escudo espectral aparece y te da +2 a CA durante 1 minuto.',
+  'Eres inmune al daño por veneno durante 1 hora.',
+  'Tu pelo cambia de color permanentemente.',
+  'Lanzas confusión centrado en ti mismo.',
+  'Por 1 minuto obtienes visión en la oscuridad a 60 pies.',
+  'Aparece un unicornio a 5 pies. Huye en la siguiente ronda.',
+  'No puedes hablar durante 1 minuto. Cuando te sea posible, solo puedes gritar.',
+  'Lanzas levitación sobre ti mismo.',
+  'Un animal es convocado. Aparece a 5 pies.',
+  'Todos los botones de tu ropa se convierten en gemas (10 po cada una).',
+  'Lanzas imagen mayor de ti mismo.',
+  'Lanzas manos ardientes (2d6) centrado en ti mismo.',
+  'La magia te hace crecer 1d10 centímetros.',
+  'Lanzas nube de dagas.',
+  'Ganas resistencia a todos los daños durante 1 minuto.',
+  'Una criatura aleatoria a 60 pies queda hechizada por ti durante 1 minuto.',
+  'Eres transportado al Plano Astral hasta el final de tu siguiente turno.',
+  'Maximizas el siguiente hechizo que lances.',
+  'Durante 1 minuto, flotas 6 pulgadas sobre el suelo.',
+  'Todas las criaturas a 30 pies se vuelven invisibles durante 1 minuto.',
+  'Tu piel brillantemente se convierte en piel de bestia durante 1 minuto.',
+  'Lanzas bola de relámpago de 5to nivel.',
+  'Tu siguiente hechizo hace 1d10 de daño necrótico adicional.',
+  'Lanzas curar heridas del grupo.',
+  'Una mano gigante ilusoria aparece. Puedes usarla como mano del mago durante 1 minuto.',
+  'Eres curado por 1d4 x tu nivel de hechicero.',
+  'Lanzas muro de fuego.',
+  'Tu siguiente hechizo que cause daño causa daño de fuerza en su lugar.',
+  'Durante 1 minuto, cualquier criatura que te golpee en cuerpo a cuerpo sufre 1d6 de daño psíquico.',
+  'Lanzas invisibilidad sobre ti mismo.',
+  'Una criatura a 60 pies recibe 4d10 de daño de rayo.',
+  'Lanzas espejo mágico.',
+  'Una criatura aleatoria a 60 pies recupera 3d10 PG.',
+  'Lanzas muro de espinas.',
+  'Teleportas hasta 60 pies a un espacio que veas.',
+  'Eres rodeado por música festiva imperceptible para ti durante 24 horas.',
+  'Tres monedas de oro caen del cielo sobre ti.',
+  'Máximas tu siguiente tirada de daño.',
+  'Lanzas nube venenosa.',
+  'Ganas una velocidad adicional de vuelo de 10 pies durante 1 minuto.',
+  'Tu sombra actúa independientemente durante 1 minuto.',
+  'Lanzas bola de fuego de 5to nivel en un punto aleatorio.',
+  'Durante 1 minuto, tu voz suena 10 veces más fuerte.',
+  'Teleportas a todos a 30 pies a lugares aleatorios.',
+  'Lanzas polimorfismo sobre una criatura aleatoria.',
+  'Por 1 minuto, flotas y dejas rastro de arcoíris.',
+  'El próximo hechizo que lances tiene su área de efecto duplicada.',
+  'Te vuelves etéreo hasta el inicio de tu siguiente turno.',
+  'Lanzas detener el tiempo.',
+  'Una montura espectral aparece durante 1 hora.',
+  'Lanzas torbellino.',
+  'Cada criatura a 30 pies recibe 1d10 de daño de trueno.',
+  'Adquieres inmunidad a los estados alterados durante 1 minuto.',
+  'Tu siguiente hechizo requiere doble de componentes.',
+  'El siguiente hechizo que lances se lanza como si fuera 2 niveles más alto.',
+  'Ganas una característica de 20 aleatoria durante 1 hora.',
+  'Aparecen 1d4 pollos inofensivos a tu alrededor.',
+  'Todas las llamas en 60 pies se apagan.',
+  'Tu siguiente ataque impacta automáticamente.',
+  'Eres rodeado de mariposas brillantes durante 1 minuto. Ataques en tu contra con desventaja.',
+  'Lanzas nube de espadas.',
+  'Tu cuerpo emite luz brillante a 30 pies durante 1 minuto.',
+  'Lanzas rayo de debilitamiento sobre ti mismo.',
+  'Las siguientes 1d4 pociones que bebas tienen efecto máximo.',
+  'Una puerta dimensional aparece. Conduce a un lugar aleatorio.',
+  'Lanzas retroceder.',
+  'Puedes lanzar prestidigitación sin límite durante 1 minuto.',
+  'Lanzas necrosis sin componentes.',
+  'Debes lanzar hechizos usando tu pie no dominante durante 1 minuto.',
+  'Ganas efecto de agrandar/reducir por 1 minuto.',
+  'Todos los líquidos a 30 pies se convierten en agua.',
+  'Recibes una visión del futuro. Ventaja en la siguiente tirada.',
+  'Una bola de energía arcana explota. 4d6 fuerza en 20 pies.',
+  'Cada vez que grites durante 1 hora, aparecen chispas arcanas.',
+  'Tu siguiente hechizo tiene componente somático adicional.',
+  'Lanzas dominar persona en una criatura aleatoria.',
+  'Un alter ego de ti aparece y ataca durante 1 ronda.',
+  'Tu siguiente tirada de ataque es un crítico automático.',
+  'Eres invisible hasta el inicio de tu siguiente turno o atacas.',
+  'El siguiente daño que recibirías lo recibes como curación.',
+  'Tu siguiente hechizo que falle igualmente afecta al objetivo.',
+  'Aparece un genio atrapado en una lámpara. Concede 1 deseo.',
+  'Lanzas fortaleza.',
+  'El tiempo se detiene para ti por 1 ronda. Observas sin actuar.',
+  'Todos tus hechizos del día se recargan.',
+  'Lanzas deseo.'
+];
+
+function buildWildMagicTable() {
+  var table = document.getElementById('wild_magic_table');
+  if (!table || table.innerHTML) return;
+  var html = '';
+  for (var i = 0; i < WILD_MAGIC.length; i++) {
+    html += '<tr><td style="color:var(--gold2);white-space:nowrap;font-size:0.75rem">' + (i+1).toString().padStart(2,'0') + '</td>'
+      + '<td style="font-size:0.78rem">' + WILD_MAGIC[i] + '</td></tr>';
+  }
+  table.innerHTML = html;
+}
+
+function rollWildMagic() {
+  buildWildMagicTable();
+  var roll   = Math.floor(Math.random() * 100);
+  var result = document.getElementById('wild_magic_result');
+  if (result) {
+    result.innerHTML = '<span style="color:var(--text3);font-size:0.78rem">d100 = ' + (roll+1) + '</span><br>' + WILD_MAGIC[roll];
+  }
+}
+
+// ── HISTORIAL DE TIRADAS PERSISTENTE ──────────────────────
+function saveDiceHistory() {
+  try { localStorage.setItem('dnd5e_dice_history', JSON.stringify(diceHistory)); } catch(e) {}
+}
+
+function loadDiceHistory() {
+  try {
+    var saved = localStorage.getItem('dnd5e_dice_history');
+    if (saved) {
+      diceHistory = JSON.parse(saved);
+      renderDiceHistory();
+    }
+  } catch(e) {}
+}
+
 // ── ENCOUNTER TRACKER ─────────────────────────────────────
 function addEncounterCreature() {
   var name = document.getElementById('enc_name').value.trim();
@@ -4571,6 +5143,8 @@ window.addEventListener('DOMContentLoaded', function() {
   buildSaveRollButtons();
   setupTabs();
   loadLogo();
+  loadDiceHistory();
+  initQuickNotes();
   buildOriginSelects();
   initXP();
   renderConcentration();
@@ -5206,6 +5780,7 @@ function showDiceResult(label, total, detail) {
     + '<div class="dice-roll-detail">' + detail + '</div>';
   diceHistory.unshift({ label: label, total: total, detail: detail });
   if (diceHistory.length > 20) diceHistory.pop();
+  saveDiceHistory();
   renderDiceHistory();
 }
 
