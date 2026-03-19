@@ -856,6 +856,46 @@ input[type="number"] { text-align: center; }
 }
 .toast.show { transform: translateY(0); opacity: 1; }
 
+.dm-ref-title {
+  font-family: var(--font-title);
+  font-size: 0.82rem;
+  color: var(--gold2);
+  letter-spacing: 1px;
+  cursor: pointer;
+  padding: 4px 0;
+  user-select: none;
+  -webkit-user-select: none;
+}
+.dm-ref-title:hover { color: var(--gold); }
+.dm-ref-body { margin-top: 8px; }
+.dm-ref-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.82rem;
+}
+.dm-ref-table th {
+  text-align: left;
+  color: var(--gold2);
+  font-size: 0.72rem;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  padding: 3px 6px;
+  border-bottom: 1px solid var(--border2);
+}
+.dm-ref-table td {
+  padding: 4px 6px;
+  border-bottom: 1px solid var(--bg4);
+  color: var(--text2);
+  vertical-align: top;
+}
+.dm-ref-table td:first-child {
+  color: var(--text);
+  font-weight: 600;
+  white-space: nowrap;
+  padding-right: 12px;
+  min-width: 120px;
+}
+
 /* ============================================================
    DM MODE
 ============================================================ */
@@ -1694,6 +1734,15 @@ input[type="number"] { text-align: center; }
           <option value="13">Ballesta de mano (1d6)</option>
           <option value="14">Ballesta ligera (1d8)</option>
           <option value="15">Honda (1d4)</option>
+          <optgroup label="── Sin armas ──">
+            <option value="16">Golpe sin armas (1+FUE)</option>
+            <option value="17">Artes marciales d4 (Monje nv.1-4)</option>
+            <option value="18">Artes marciales d6 (Monje nv.5-10)</option>
+            <option value="19">Artes marciales d8 (Monje nv.11-16)</option>
+            <option value="20">Artes marciales d10 (Monje nv.17+)</option>
+            <option value="21">Golpe de colmillos (1d6)</option>
+            <option value="22">Embestida (2d6)</option>
+          </optgroup>
         </select>
       </div>
       <div style="min-width:120px">
@@ -1728,6 +1777,12 @@ input[type="number"] { text-align: center; }
     <div style="margin-top:12px;text-align:center;">
       <button class="btn-roll" onclick="rollWeaponAttack()">🎲 Tirar Ataque</button>
     </div>
+  </div>
+
+  <p class="section-title">Ataques Sin Armas</p>
+  <div class="card">
+    <p style="font-size:0.78rem;color:var(--text3);margin-bottom:10px">Golpes marciales calculados con tus stats actuales. Toca 🎲 para tirar.</p>
+    <div id="unarmed_attacks_list"></div>
   </div>
 
   <p class="section-title">Ataques Personalizados</p>
@@ -2129,6 +2184,154 @@ input[type="number"] { text-align: center; }
         oninput="saveDMData()"></textarea>
     </div>
 
+    <!-- PANTALLA DE REFERENCIA -->
+    <p class="section-title">📋 Pantalla de Referencia</p>
+
+    <!-- Acciones en combate -->
+    <div class="card" style="margin-bottom:10px">
+      <div class="dm-ref-title" onclick="toggleDMRef('ref_actions')">⚔ Acciones en Combate <span style="float:right">▾</span></div>
+      <div id="ref_actions" class="dm-ref-body">
+        <table class="dm-ref-table">
+          <tr><td>Atacar</td><td>Haz una tirada de ataque</td></tr>
+          <tr><td>Cargar</td><td>Muévete hasta velocidad y ataca</td></tr>
+          <tr><td>Lanzar hechizo</td><td>Lanza un hechizo con tiempo 1 acción</td></tr>
+          <tr><td>Ayudar</td><td>Aliado tiene ventaja en ataque o habilidad</td></tr>
+          <tr><td>Esconderse</td><td>Prueba DES(Sigilo) vs Percepción pasiva</td></tr>
+          <tr><td>Desengancharse</td><td>Movimiento no provoca ataques de oportunidad</td></tr>
+          <tr><td>Esquivar</td><td>Ataques contra ti con desventaja, ventaja en DES</td></tr>
+          <tr><td>Preparar</td><td>Prepara acción con desencadenante</td></tr>
+          <tr><td>Buscar</td><td>Percepción o Investigación para encontrar algo</td></tr>
+          <tr><td>Usar objeto</td><td>Interactuar con objeto del entorno</td></tr>
+          <tr><td>Correr</td><td>+velocidad de movimiento este turno</td></tr>
+        </table>
+      </div>
+    </div>
+
+    <!-- Condiciones -->
+    <div class="card" style="margin-bottom:10px">
+      <div class="dm-ref-title" onclick="toggleDMRef('ref_conditions')">💀 Condiciones <span style="float:right">▾</span></div>
+      <div id="ref_conditions" class="dm-ref-body" style="display:none">
+        <table class="dm-ref-table">
+          <tr><td>Cegado</td><td>Falla pruebas que requieran vista. Ataques con desventaja, ataques contra él con ventaja</td></tr>
+          <tr><td>Encantado</td><td>No puede atacar al encantador. El encantador tiene ventaja en interacciones sociales</td></tr>
+          <tr><td>Asustado</td><td>Desventaja en pruebas y ataques mientras vea la fuente. No puede acercarse voluntariamente</td></tr>
+          <tr><td>Agarrado</td><td>Velocidad 0. Termina si el agarrador queda incapacitado o si es apartado</td></tr>
+          <tr><td>Incapacitado</td><td>No puede realizar acciones ni reacciones</td></tr>
+          <tr><td>Invisible</td><td>Imposible de ver sin magia. Ataques con ventaja, ataques contra él con desventaja</td></tr>
+          <tr><td>Paralizado</td><td>Incapacitado, no puede moverse ni hablar. Falla FUE y DES automáticamente. Golpes críticos a 1,5m</td></tr>
+          <tr><td>Petrificado</td><td>Transformado en piedra. Incapacitado, no sabe lo que pasa, resistencia a todos los daños</td></tr>
+          <tr><td>Envenenado</td><td>Desventaja en tiradas de ataque y pruebas de característica</td></tr>
+          <tr><td>Derribado</td><td>Moverse cuesta el doble. Ataques cuerpo a cuerpo con ventaja, a distancia con desventaja</td></tr>
+          <tr><td>Aturdido</td><td>Incapacitado, no puede moverse. Falla FUE y DES. Ataques contra él con ventaja</td></tr>
+          <tr><td>Inconsciente</td><td>Incapacitado, cae derribado. Falla FUE y DES. Golpes críticos a 1,5m</td></tr>
+        </table>
+      </div>
+    </div>
+
+    <!-- Dificultades -->
+    <div class="card" style="margin-bottom:10px">
+      <div class="dm-ref-title" onclick="toggleDMRef('ref_dc')">🎯 Clases de Dificultad <span style="float:right">▾</span></div>
+      <div id="ref_dc" class="dm-ref-body" style="display:none">
+        <table class="dm-ref-table">
+          <tr><th>Dificultad</th><th>CD</th></tr>
+          <tr><td>Muy fácil</td><td>5</td></tr>
+          <tr><td>Fácil</td><td>10</td></tr>
+          <tr><td>Moderada</td><td>15</td></tr>
+          <tr><td>Difícil</td><td>20</td></tr>
+          <tr><td>Muy difícil</td><td>25</td></tr>
+          <tr><td>Casi imposible</td><td>30</td></tr>
+        </table>
+        <div style="margin-top:8px;font-size:0.82rem;color:var(--text2)">
+          <strong style="color:var(--gold2)">Empujar/Volcar:</strong> CD FUE = 8 + bonif. comp + mod FUE del objetivo<br>
+          <strong style="color:var(--gold2)">Engañar/Persuadir:</strong> CD = Perspicacia pasiva del objetivo<br>
+          <strong style="color:var(--gold2)">Esconderse:</strong> CD = Percepción pasiva del objetivo
+        </div>
+      </div>
+    </div>
+
+    <!-- Descansos -->
+    <div class="card" style="margin-bottom:10px">
+      <div class="dm-ref-title" onclick="toggleDMRef('ref_rests')">🌙 Descansos <span style="float:right">▾</span></div>
+      <div id="ref_rests" class="dm-ref-body" style="display:none">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+          <div>
+            <div style="font-size:0.78rem;font-weight:bold;color:var(--gold2);margin-bottom:6px">☀ Descanso Corto (1h)</div>
+            <ul style="font-size:0.82rem;color:var(--text2);padding-left:16px;line-height:1.7">
+              <li>Gastar Dados de Golpe</li>
+              <li>Usos de Ki (Monje)</li>
+              <li>Oleada de Acción (Guerrero)</li>
+              <li>Invocaciones del Brujo</li>
+              <li>2º Aliento (Guerrero)</li>
+            </ul>
+          </div>
+          <div>
+            <div style="font-size:0.78rem;font-weight:bold;color:var(--gold2);margin-bottom:6px">🌙 Descanso Largo (8h)</div>
+            <ul style="font-size:0.82rem;color:var(--text2);padding-left:16px;line-height:1.7">
+              <li>Todos los PG</li>
+              <li>Todos los espacios de hechizo</li>
+              <li>Todos los Dados de Golpe (máx: la mitad)</li>
+              <li>Rabia (Bárbaro)</li>
+              <li>Conjurar la divinidad (Clérigo)</li>
+              <li>Forma salvaje (Druida)</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tiradas de muerte -->
+    <div class="card" style="margin-bottom:10px">
+      <div class="dm-ref-title" onclick="toggleDMRef('ref_death')">💔 Tiradas de Muerte <span style="float:right">▾</span></div>
+      <div id="ref_death" class="dm-ref-body" style="display:none">
+        <table class="dm-ref-table">
+          <tr><td><strong>3 éxitos</strong></td><td>Estabilizado (inconsciente con 0 PG)</td></tr>
+          <tr><td><strong>3 fallos</strong></td><td>Muerte</td></tr>
+          <tr><td><strong>1 natural</strong></td><td>2 fallos</td></tr>
+          <tr><td><strong>20 natural</strong></td><td>Recuperas 1 PG, te levantas</td></tr>
+          <tr><td><strong>Daño a 0 PG</strong></td><td>1 fallo (2 si es cuerpo a cuerpo adyacente)</td></tr>
+          <tr><td><strong>Curación</strong></td><td>Recupera PG, se levanta, resetea contadores</td></tr>
+        </table>
+      </div>
+    </div>
+
+    <!-- Movimiento y distancias -->
+    <div class="card" style="margin-bottom:10px">
+      <div class="dm-ref-title" onclick="toggleDMRef('ref_movement')">🗺 Movimiento y Distancias <span style="float:right">▾</span></div>
+      <div id="ref_movement" class="dm-ref-body" style="display:none">
+        <table class="dm-ref-table">
+          <tr><th>Ritmo</th><th>por hora</th><th>por día</th><th>Efecto</th></tr>
+          <tr><td>Rápido</td><td>6 km</td><td>48 km</td><td>-5 a Percepción pasiva</td></tr>
+          <tr><td>Normal</td><td>4.5 km</td><td>36 km</td><td>—</td></tr>
+          <tr><td>Lento</td><td>3 km</td><td>24 km</td><td>Sigilo posible</td></tr>
+        </table>
+        <div style="margin-top:8px;font-size:0.82rem;color:var(--text2)">
+          <strong style="color:var(--gold2)">Escalar/Nadar:</strong> 2 pies de movimiento por cada 1 pie<br>
+          <strong style="color:var(--gold2)">Salto largo:</strong> FUE pies (con carrera) o FUE/2 (sin carrera)<br>
+          <strong style="color:var(--gold2)">Salto alto:</strong> 3 + mod FUE pies (con carrera)
+        </div>
+      </div>
+    </div>
+
+    <!-- Tabla de encuentros por nivel -->
+    <div class="card" style="margin-bottom:10px">
+      <div class="dm-ref-title" onclick="toggleDMRef('ref_xp')">⚔ XP por Desafío <span style="float:right">▾</span></div>
+      <div id="ref_xp" class="dm-ref-body" style="display:none">
+        <table class="dm-ref-table">
+          <tr><th>ND</th><th>XP</th><th>ND</th><th>XP</th></tr>
+          <tr><td>0</td><td>10</td><td>7</td><td>2.900</td></tr>
+          <tr><td>1/8</td><td>25</td><td>8</td><td>3.900</td></tr>
+          <tr><td>1/4</td><td>50</td><td>9</td><td>5.000</td></tr>
+          <tr><td>1/2</td><td>100</td><td>10</td><td>5.900</td></tr>
+          <tr><td>1</td><td>200</td><td>11</td><td>7.200</td></tr>
+          <tr><td>2</td><td>450</td><td>12</td><td>8.400</td></tr>
+          <tr><td>3</td><td>700</td><td>13</td><td>10.000</td></tr>
+          <tr><td>4</td><td>1.100</td><td>14</td><td>11.500</td></tr>
+          <tr><td>5</td><td>1.800</td><td>15</td><td>13.000</td></tr>
+          <tr><td>6</td><td>2.300</td><td>20</td><td>25.000</td></tr>
+        </table>
+      </div>
+    </div>
+
   </div>
 </div>
 
@@ -2303,6 +2506,14 @@ const WEAPONS_DATA = [
   { name:'Ballesta de mano',dmg:'1d6',type:'perforante',finesse:false,ranged:true },
   { name:'Ballesta ligera',dmg:'1d8',type:'perforante', finesse:false,ranged:true },
   { name:'Honda',      dmg:'1d4',  type:'contundente', finesse:false, ranged:true },
+  // ── Ataques sin armas ────────────────────────────────────
+  { name:'Golpe sin armas',      dmg:'1+',  type:'contundente', finesse:false, unarmed:true },
+  { name:'Artes marciales (d4)', dmg:'1d4',  type:'contundente', finesse:true,  unarmed:true },
+  { name:'Artes marciales (d6)', dmg:'1d6',  type:'contundente', finesse:true,  unarmed:true },
+  { name:'Artes marciales (d8)', dmg:'1d8',  type:'contundente', finesse:true,  unarmed:true },
+  { name:'Artes marciales (d10)',dmg:'1d10', type:'contundente', finesse:true,  unarmed:true },
+  { name:'Golpe de colmillos',   dmg:'1d6',  type:'perforante',  finesse:false, unarmed:true },
+  { name:'Embestida',            dmg:'2d6',  type:'contundente', finesse:false, unarmed:true },
 ];
 
 // ============================================================
@@ -3521,6 +3732,12 @@ function saveDMData() {
   try { localStorage.setItem(DM_DATA_KEY, JSON.stringify(dmData)); } catch(e) {}
 }
 
+function toggleDMRef(id) {
+  var el = document.getElementById(id);
+  if (!el) return;
+  el.style.display = el.style.display === 'none' ? 'block' : 'none';
+}
+
 // ── ENCOUNTER TRACKER ─────────────────────────────────────
 function addEncounterCreature() {
   var name = document.getElementById('enc_name').value.trim();
@@ -4512,8 +4729,11 @@ function recalc() {
   // Spell slots display
   updateSpellSlotsDisplay(cls, level);
 
+  // Unarmed attacks update with stats
+  renderUnarmedAttacks();
+
   // Header name
-  const nm = document.getElementById('char_name').value;
+  var nm = document.getElementById('char_name').value;
   document.getElementById('header_name').textContent = nm || 'Sin personaje';
 
   // Skill roll buttons updated
@@ -4728,6 +4948,127 @@ function modHP(delta) {
 // ============================================================
 // COMBAT: CUSTOM ATTACKS
 // ============================================================
+function renderUnarmedAttacks() {
+  var container = document.getElementById('unarmed_attacks_list');
+  if (!container) return;
+
+  var ab    = getAbilities();
+  var level = parseInt(document.getElementById('char_level').value) || 1;
+  var cls   = document.getElementById('char_class').value;
+  var prof  = getProfBonus(level);
+
+  // Determine relevant unarmed attacks by class
+  var strMod = getMod(ab.str);
+  var dexMod = getMod(ab.dex);
+
+  // Monk martial arts die by level
+  var monkDie = level >= 17 ? 'd10' : level >= 11 ? 'd8' : level >= 5 ? 'd6' : 'd4';
+
+  var attacks = [];
+
+  // Universal: unarmed strike
+  var unarmedDmg = Math.max(1, 1 + strMod);
+  var unarmedAtk = strMod + prof;
+  attacks.push({
+    name: 'Golpe sin armas',
+    atk: unarmedAtk,
+    dmg: unarmedDmg + ' (fijo)',
+    detail: '1 + FUE',
+    type: 'contundente',
+    icon: '👊'
+  });
+
+  // Monk
+  if (cls === 'Monk') {
+    var monkMod = Math.max(strMod, dexMod);
+    var monkAtk = monkMod + prof;
+    attacks.push({
+      name: 'Artes marciales (' + monkDie + ')',
+      atk: monkAtk,
+      dmg: monkDie + fmtMod(monkMod),
+      detail: monkDie + ' + FUE/DES',
+      type: 'contundente',
+      icon: '🥋'
+    });
+    attacks.push({
+      name: 'Golpe adicional (ki)',
+      atk: monkAtk,
+      dmg: monkDie + fmtMod(monkMod),
+      detail: 'Acción adicional',
+      type: 'contundente',
+      icon: '⚡'
+    });
+  }
+
+  // Barbarian rage bonus
+  if (cls === 'Barbarian') {
+    var rageMod = level >= 16 ? 4 : level >= 9 ? 3 : 2;
+    attacks.push({
+      name: 'Golpe con rabia',
+      atk: strMod + prof,
+      dmg: '1' + fmtMod(strMod + rageMod),
+      detail: '1 + FUE + rabia',
+      type: 'contundente',
+      icon: '😤'
+    });
+  }
+
+  // Fighter/Paladin/Ranger shield bash
+  if (cls === 'Fighter' || cls === 'Paladin') {
+    attacks.push({
+      name: 'Golpe de escudo',
+      atk: strMod + prof,
+      dmg: '1d4' + fmtMod(strMod),
+      detail: '1d4 + FUE',
+      type: 'contundente',
+      icon: '🛡'
+    });
+  }
+
+  container.innerHTML = attacks.map(function(a, i) {
+    return '<div class="attack-row">'
+      + '<span class="attack-name">' + a.icon + ' ' + a.name + '</span>'
+      + '<span class="attack-stat" style="font-size:0.78rem">' + fmtMod(a.atk) + '</span>'
+      + '<span class="attack-stat" style="font-size:0.78rem">' + a.dmg + ' ' + a.type + '</span>'
+      + '<button class="btn-roll" onclick="rollUnarmedAttack(' + i + ')" title="Tirar">🎲</button>'
+      + '</div>';
+  }).join('');
+
+  // Store for rolling
+  container._attacks = attacks;
+}
+
+function rollUnarmedAttack(i) {
+  var container = document.getElementById('unarmed_attacks_list');
+  if (!container || !container._attacks) return;
+  var a = container._attacks[i];
+  if (!a) return;
+
+  var d20   = Math.ceil(Math.random() * 20);
+  var total = d20 + a.atk;
+
+  // Roll damage
+  var dmgResult;
+  if (a.dmg.indexOf('d') !== -1) {
+    dmgResult = rollFormula(a.dmg.replace(/\s/g,''));
+  } else {
+    var n = parseInt(a.dmg) || 1;
+    dmgResult = { total: n, detail: String(n) };
+  }
+
+  showDiceResult(
+    a.icon + ' ' + a.name,
+    total,
+    'd20(' + d20 + ') ' + fmtMod(a.atk) + ' | Daño: ' + dmgResult.detail + ' = ' + dmgResult.total + ' ' + a.type
+  );
+
+  // Switch to dice tab
+  document.querySelectorAll('.tab-btn').forEach(function(b){ b.classList.remove('active'); });
+  document.querySelectorAll('.tab-panel').forEach(function(p){ p.classList.remove('active'); });
+  document.querySelector('[data-tab="dice"]').classList.add('active');
+  document.getElementById('tab-dice').classList.add('active');
+}
+
 function addCustomAttack() {
   const name  = document.getElementById('custom_atk_name').value.trim();
   const bonus = document.getElementById('custom_atk_bonus').value;
@@ -4825,7 +5166,15 @@ function rollWeaponAttack() {
 
   var d20   = Math.ceil(Math.random() * 20);
   var total = d20 + atkBonus;
-  var dmg   = rollFormula(weapon.dmg + (atkMod >= 0 ? '+' : '') + atkMod);
+
+  // Special case: unarmed strike "1+" means 1 + STR mod (minimum 1)
+  var dmgFormula = weapon.dmg;
+  if (dmgFormula === '1+') {
+    dmgFormula = String(Math.max(1, 1 + atkMod));
+  } else {
+    dmgFormula = dmgFormula + (atkMod >= 0 ? '+' : '') + atkMod;
+  }
+  var dmg = rollFormula(dmgFormula);
 
   showDiceResult(
     weapon.name + ': Ataque',
