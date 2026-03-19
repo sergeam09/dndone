@@ -1476,7 +1476,15 @@ input[type="number"] { text-align: center; }
     </div>
     <div>
       <label>Raza</label>
-      <input type="text" id="char_race" placeholder="Humano, Elfo...">
+      <div id="char_race_display" onclick="goToOriginTab()" title="Elige en la pestaña Origen"
+        style="font-family:var(--font-title);color:var(--gold2);padding:8px 10px;
+               background:var(--bg3);border:1px solid var(--border2);border-radius:var(--radius);
+               cursor:pointer;font-size:0.88rem;min-height:36px;display:flex;align-items:center;
+               justify-content:space-between;gap:6px">
+        <span id="char_race_text" style="color:var(--text3);font-style:italic">— elige en 🧬 Origen —</span>
+        <span style="font-size:0.65rem;color:var(--text3)">🧬</span>
+      </div>
+      <input type="hidden" id="char_race" value="">
     </div>
     <div>
       <label>Nivel</label>
@@ -1487,7 +1495,15 @@ input[type="number"] { text-align: center; }
     </div>
     <div>
       <label>Trasfondo</label>
-      <input type="text" id="char_background" placeholder="Ej: Forajido">
+      <div id="char_background_display" onclick="goToOriginTab()" title="Elige en la pestaña Origen"
+        style="font-family:var(--font-title);color:var(--gold2);padding:8px 10px;
+               background:var(--bg3);border:1px solid var(--border2);border-radius:var(--radius);
+               cursor:pointer;font-size:0.88rem;min-height:36px;display:flex;align-items:center;
+               justify-content:space-between;gap:6px">
+        <span id="char_background_text" style="color:var(--text3);font-style:italic">— elige en 🧬 Origen —</span>
+        <span style="font-size:0.65rem;color:var(--text3)">🧬</span>
+      </div>
+      <input type="hidden" id="char_background" value="">
     </div>
     <div>
       <label>Alineamiento</label>
@@ -2753,6 +2769,48 @@ function removeSession(i) {
   saveCharacter();
 }
 
+function goToOriginTab() {
+  document.querySelectorAll('.tab-btn').forEach(function(b){ b.classList.remove('active'); });
+  document.querySelectorAll('.tab-panel').forEach(function(p){ p.classList.remove('active'); });
+  var btn = document.querySelector('[data-tab="origin"]');
+  if (btn) btn.classList.add('active');
+  var panel = document.getElementById('tab-origin');
+  if (panel) panel.classList.add('active');
+  buildSubclassSelect();
+}
+
+function syncRaceBackgroundDisplay() {
+  var raceText   = document.getElementById('char_race_text');
+  var bgText     = document.getElementById('char_background_text');
+  var raceDisp   = document.getElementById('char_race_display');
+  var bgDisp     = document.getElementById('char_background_display');
+  var raceVal    = document.getElementById('char_race').value;
+  var bgVal      = document.getElementById('char_background').value;
+
+  if (raceText) {
+    if (raceVal) {
+      raceText.textContent = raceVal;
+      raceText.style.color = 'var(--gold2)';
+      raceText.style.fontStyle = 'normal';
+    } else {
+      raceText.textContent = '— elige en 🧬 Origen —';
+      raceText.style.color = 'var(--text3)';
+      raceText.style.fontStyle = 'italic';
+    }
+  }
+  if (bgText) {
+    if (bgVal) {
+      bgText.textContent = bgVal;
+      bgText.style.color = 'var(--gold2)';
+      bgText.style.fontStyle = 'normal';
+    } else {
+      bgText.textContent = '— elige en 🧬 Origen —';
+      bgText.style.color = 'var(--text3)';
+      bgText.style.fontStyle = 'italic';
+    }
+  }
+}
+
 // ============================================================
 // ORIGIN: RACES (extend buildOriginSelects to include subclass)
 // ============================================================
@@ -2933,6 +2991,7 @@ function applyRace() {
   recalc();
   saveCharacter();
   showToast('Raza aplicada: ' + r.name + (sr ? ' — ' + sr.name : ''));
+  syncRaceBackgroundDisplay();
 }
 
 // ============================================================
@@ -3010,6 +3069,7 @@ function applyBackground() {
   recalc();
   saveCharacter();
   showToast('Trasfondo aplicado: ' + bg.name);
+  syncRaceBackgroundDisplay();
 }
 
 // ============================================================
@@ -4279,6 +4339,7 @@ function createGeneratedCharacter() {
   buildSubclassSelect();
   document.getElementById('generator_screen').style.display = 'none';
   showToast('¡Personaje creado: ' + char.name + '!');
+  syncRaceBackgroundDisplay();
 }
 
 // ============================================================
@@ -5148,6 +5209,7 @@ function applyCharToForm() {
   renderXPBar();
   renderConcentration();
   applyPortrait(char.portrait || null);
+  syncRaceBackgroundDisplay();
 }
 
 // ============================================================
