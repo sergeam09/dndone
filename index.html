@@ -1225,24 +1225,74 @@ input[type="number"] { text-align: center; }
 .char-feat-name { font-weight: 600; font-size: 0.95rem; color: var(--text); }
 .char-feat-desc { font-size: 0.82rem; color: var(--text2); margin-top: 3px; line-height: 1.4; }
 .condition-tag {
-  padding: 4px 12px;
+  padding: 5px 10px;
   border-radius: 20px;
   border: 1px solid var(--border);
   background: var(--bg4);
   color: var(--text2);
-  font-size: 0.8rem;
+  font-size: 0.78rem;
   cursor: pointer;
   transition: all 0.15s;
   -webkit-user-select: none;
   user-select: none;
-  /* iOS tap fix */
   -webkit-tap-highlight-color: transparent;
   touch-action: manipulation;
+  display: flex;
+  align-items: center;
+  gap: 4px;
 }
+.condition-tag:hover { border-color: var(--gold); color: var(--text); }
 .condition-tag.active {
   border-color: var(--red2);
-  background: rgba(231,76,60,0.15);
+  background: rgba(231,76,60,0.18);
   color: var(--red2);
+  font-weight: bold;
+}
+.condition-tag.active.cond-poison  { border-color:#8e44ad; background:rgba(142,68,173,0.15); color:#8e44ad; }
+.condition-tag.active.cond-charm   { border-color:#9b59b6; background:rgba(155,89,182,0.15); color:#9b59b6; }
+.condition-tag.active.cond-hidden  { border-color:#1abc9c; background:rgba(26,188,156,0.15); color:#1abc9c; }
+.condition-tag.active.cond-gray    { border-color:#95a5a6; background:rgba(149,165,166,0.15); color:#95a5a6; }
+.condition-tag.active.cond-blue    { border-color:#2980b9; background:rgba(41,128,185,0.15); color:#2980b9; }
+.condition-tag.active.cond-orange  { border-color:#e67e22; background:rgba(230,126,34,0.15); color:#e67e22; }
+.condition-tag.active.cond-dark    { border-color:#7f8c8d; background:rgba(127,140,141,0.15); color:#7f8c8d; }
+
+/* Active conditions banner */
+#active_conditions_banner {
+  display: none;
+  margin-bottom: 10px;
+  padding: 8px 12px;
+  background: rgba(231,76,60,0.1);
+  border: 1px solid rgba(231,76,60,0.4);
+  border-radius: var(--radius);
+}
+#active_conditions_banner .cond-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  font-weight: bold;
+  margin: 2px;
+  cursor: pointer;
+}
+
+/* Condition tooltip */
+#condition_tooltip {
+  display: none;
+  position: fixed;
+  bottom: 80px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--bg2);
+  border: 1px solid var(--gold);
+  border-radius: var(--radius);
+  padding: 10px 14px;
+  max-width: 300px;
+  width: 90vw;
+  z-index: 500;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+  font-size: 0.82rem;
 }
 </style>
 </head>
@@ -1716,7 +1766,22 @@ input[type="number"] { text-align: center; }
 
   <p class="section-title">Condiciones</p>
   <div class="card">
+    <!-- Banner de condiciones activas -->
+    <div id="active_conditions_banner">
+      <div style="font-size:0.7rem;color:var(--red2);letter-spacing:1px;font-family:var(--font-title);margin-bottom:4px">⚠ CONDICIONES ACTIVAS</div>
+      <div id="active_conditions_pills"></div>
+    </div>
+    <div style="font-size:0.75rem;color:var(--text3);margin-bottom:8px">Toca para activar/desactivar. Mantén para ver descripción.</div>
     <div class="condition-tags" id="conditions_list"></div>
+  </div>
+
+  <!-- Tooltip de condición -->
+  <div id="condition_tooltip" onclick="hideConditionTooltip()">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+      <span id="cond_tooltip_title" style="font-family:var(--font-title);font-size:1rem;color:var(--gold)"></span>
+      <span style="font-size:0.68rem;color:var(--text3)">Toca para cerrar</span>
+    </div>
+    <div id="cond_tooltip_body" style="color:var(--text2);line-height:1.5"></div>
   </div>
 
 </div>
@@ -1727,6 +1792,7 @@ input[type="number"] { text-align: center; }
 <div id="tab-combat" class="tab-panel">
 
   <p class="section-title">Arma Principal</p>
+  <div id="condition_atk_warning" style="display:none;font-size:0.8rem;padding:6px 10px;background:rgba(231,76,60,0.08);border:1px solid rgba(231,76,60,0.3);border-radius:var(--radius);margin-bottom:8px"></div>
   <div class="card">
     <div class="inline-row">
       <div class="flex-1">
@@ -2799,6 +2865,22 @@ const ABILITY_NAMES = { str:'FUE', dex:'DES', con:'CON', int:'INT', wis:'SAB', c
 const CONDITIONS = ['Envenenado','Paralizado','Asustado','Encantado','Cegado','Ensordecido',
                     'Agotamiento','Agarrado','Incapacitado','Invisible','Derribado','Aturdido','Inconsciente'];
 
+const CONDITION_DATA = {
+  'Envenenado':    { icon:'🤢', color:'#8e44ad', effect:'Desventaja en tiradas de ataque y pruebas de característica.', mechanic:'disadvantage_attacks' },
+  'Paralizado':    { icon:'⚡', color:'#e74c3c', effect:'Incapacitado. No puede moverse ni hablar. Falla salvaciones de FUE y DES. Los ataques contra él tienen ventaja. Golpes críticos a 1.5m.', mechanic:'incapacitated' },
+  'Asustado':      { icon:'😨', color:'#e67e22', effect:'Desventaja en pruebas de característica y ataques mientras vea la fuente. No puede acercarse voluntariamente.', mechanic:'disadvantage_attacks' },
+  'Encantado':     { icon:'💜', color:'#9b59b6', effect:'No puede atacar al encantador. El encantador tiene ventaja en interacciones sociales.', mechanic:'' },
+  'Cegado':        { icon:'👁️', color:'#7f8c8d', effect:'Falla pruebas que requieran vista. Ataques con desventaja. Ataques contra él con ventaja.', mechanic:'disadvantage_attacks' },
+  'Ensordecido':   { icon:'🔇', color:'#95a5a6', effect:'No puede oír. Falla automáticamente pruebas basadas en oído.', mechanic:'' },
+  'Agotamiento':   { icon:'😓', color:'#d35400', effect:'Nivel 1: desventaja en pruebas. Nivel 2: velocidad a la mitad. Nivel 3: desventaja en ataques y salvaciones. Nivel 4: PG máx a la mitad. Nivel 5: velocidad a 0. Nivel 6: muerte.', mechanic:'exhaustion' },
+  'Agarrado':      { icon:'🤝', color:'#2980b9', effect:'Velocidad reducida a 0. Termina si el agarrador queda incapacitado o si se le aparta.', mechanic:'speed_zero' },
+  'Incapacitado':  { icon:'💫', color:'#e74c3c', effect:'No puede realizar acciones ni reacciones.', mechanic:'incapacitated' },
+  'Invisible':     { icon:'👻', color:'#1abc9c', effect:'Imposible de ver sin magia especial. Sus ataques con ventaja. Ataques contra él con desventaja.', mechanic:'advantage_attacks' },
+  'Derribado':     { icon:'⬇️', color:'#e67e22', effect:'Moverse cuesta el doble. Ataques cuerpo a cuerpo con ventaja. Ataques a distancia con desventaja.', mechanic:'prone' },
+  'Aturdido':      { icon:'💥', color:'#c0392b', effect:'Incapacitado. No puede moverse. Falla salvaciones de FUE y DES. Ataques contra él con ventaja.', mechanic:'incapacitated' },
+  'Inconsciente':  { icon:'💤', color:'#2c3e50', effect:'Incapacitado. Cae derribado. Falla salvaciones de FUE y DES. Golpes críticos a 1.5m.', mechanic:'incapacitated' }
+};
+
 // ============================================================
 // STATE
 // ============================================================
@@ -2929,68 +3011,336 @@ var pendingLevelFeatures = null;
 // Class level features table (simplified SRD)
 var CLASS_LEVEL_FEATURES = {
   Barbarian: {
-    2:  ['Ataque imprudente: Puedes atacar con ventaja en todas tus tiradas de ataque cuerpo a cuerpo, pero las tiradas de ataque contra ti también tienen ventaja hasta tu siguiente turno.',
-         'Sentido del peligro: Tienes ventaja en TS de DES contra efectos visibles (trampas, hechizos con área visible).'],
-    3:  ['Camino primitivo: Elige tu subclase de bárbaro.'],
-    4:  ['Mejora de puntuación de habilidad: +2 a un atributo o +1 a dos atributos diferentes (o una dote).'],
-    5:  ['Extra ataque: Puedes atacar dos veces cuando uses la acción de Atacar.',
-         'Movimiento rápido: Tu velocidad aumenta 3m mientras no llevas armadura pesada.'],
-    7:  ['Instinto salvaje: Tu instinto está tan refinado que tienes ventaja en la tirada de iniciativa. Además, si eres sorprendido al inicio del combate, puedes actuar normalmente en tu primer turno si entras en rabia antes de hacer cualquier otra cosa.'],
+    1:  ['Rabia: Entras en rabia como acción adicional. Mientras estás en rabia: ventaja en pruebas y TS de FUE, bono de daño (+2/+3/+4 según nivel), resistencia al daño contundente, perforante y cortante. Termina si queda inconsciente, no ataca ni recibe daño en el turno. Usos: 2 (nv.1), 3 (nv.3), 4 (nv.6), 5 (nv.12), 6 (nv.17), ilimitados (nv.20).',
+         'Defensa sin armadura: Sin armadura tu CA = 10 + mod DES + mod CON.'],
+    2:  ['Ataque imprudente: Puedes atacar con ventaja en todas las tiradas de ataque cuerpo a cuerpo con FUE, pero los ataques contra ti tienen ventaja hasta tu siguiente turno.',
+         'Sentido del peligro: Ventaja en TS de DES contra efectos visibles (trampas, hechizos).'],
+    3:  ['Camino primitivo: Elige tu subclase de bárbaro (Berserker, Totem Warrior, etc.).'],
+    4:  ['Mejora de puntuación de habilidad: +2 a un atributo, o +1 a dos, o una dote.'],
+    5:  ['Extra ataque: Atacas dos veces cuando usas la acción de Atacar.',
+         'Movimiento rápido: Tu velocidad aumenta 10 ft. mientras no llevas armadura pesada.'],
+    6:  ['Rasgo de camino primitivo (nv.6). Usos de rabia: 4.'],
+    7:  ['Instinto salvaje: Ventaja en iniciativa. Si eres sorprendido, puedes actuar normal si entras en rabia antes de hacer otra cosa.'],
     8:  ['Mejora de puntuación de habilidad.'],
-    9:  ['Crítico brutal: Añades 1 dado de daño del arma en golpes críticos.'],
-    10: ['Rasgos de camino primitivo: nivel 10 de tu subclase.'],
-    11: ['Rabia implacable: Si caes a 0 PG mientras estás en rabia y no mueres, puedes hacer una TS CD 10. Si la superas, caes a 1 PG en su lugar. Cada vez que uses este rasgo, la CD aumenta en 5.'],
-    12: ['Mejora de puntuación de habilidad.'],
-    14: ['Rasgos de camino primitivo: nivel 14 de tu subclase.'],
-    15: ['Furia persistente: Tu rabia solo termina antes de tiempo si caes inconsciente o decides terminarla.'],
+    9:  ['Crítico brutal: Añades 1 dado de daño del arma en golpes críticos (2 dados al nv.13, 3 al nv.17).'],
+    10: ['Rasgo de camino primitivo (nv.10).'],
+    11: ['Rabia implacable: Si caes a 0 PG en rabia y no mueres, TS CD 10 CON para quedarte a 1 PG. La CD sube 5 por uso.'],
+    12: ['Mejora de puntuación de habilidad. Usos de rabia: 5.'],
+    13: ['Crítico brutal (2 dados adicionales).'],
+    14: ['Rasgo de camino primitivo (nv.14).'],
+    15: ['Furia persistente: Tu rabia solo termina si caes inconsciente o la terminas voluntariamente.'],
     16: ['Mejora de puntuación de habilidad.'],
-    17: ['Crítico brutal mejorado: Añades 2 dados de daño del arma en críticos.'],
-    18: ['Poder indomable: Si tus atributos totales son menos de 25 cuando tiras iniciativa, puedes considerarlos como 25.'],
+    17: ['Crítico brutal (3 dados adicionales). Usos de rabia: 6.'],
+    18: ['Poder indomable: Si tus atributos suman menos de 25 al tirar iniciativa, se consideran 25.'],
     19: ['Mejora de puntuación de habilidad.'],
-    20: ['Bestia primitiva: Tu FUE y CON aumentan en 4. Tu máximo de esos atributos ahora es 24.']
+    20: ['Bestia primitiva: FUE y CON +4, máximo de esos atributos ahora es 24. Usos de rabia ilimitados.']
+  },
+  Bard: {
+    1:  ['Lanzamiento de hechizos (CAR): Conjuras hechizos de bardo. CD = 8 + comp + CAR.',
+         'Inspiración bárdica: Acción adicional para dar 1d6 de inspiración a otra criatura (aumenta con el nivel: d8 nv.5, d10 nv.10, d12 nv.15). Usos = mod CAR por descanso largo.'],
+    2:  ['Canción de descanso: Durante un descanso corto, los aliados recuperan PG adicionales al gastar dados de golpe (1d6, aumenta con nivel).',
+         'Versatilidad de habilidades: Competencia en 2 habilidades adicionales.'],
+    3:  ['Colegio bárdico: Elige tu subclase (Lore, Valor, etc.).',
+         'Pericia: Tu bonificador de competencia se duplica en 2 habilidades.'],
+    4:  ['Mejora de puntuación de habilidad.'],
+    5:  ['Fuente de inspiración: Recuperas tus usos de Inspiración bárdica en descansos cortos también.',
+         'Inspiración bárdica: d8.'],
+    6:  ['Contraencantamiento: Acción para dar a tus aliados ventaja en TS contra ser encantado o asustado.',
+         'Rasgo de colegio bárdico (nv.6).'],
+    7:  [''],
+    8:  ['Mejora de puntuación de habilidad.'],
+    9:  ['Secretos mágicos: Aprende 2 hechizos de cualquier clase.'],
+    10: ['Inspiración bárdica: d10.',
+         'Pericia adicional: 2 habilidades más con competencia duplicada.',
+         'Secretos mágicos: 2 hechizos más de cualquier clase.'],
+    11: [''],
+    12: ['Mejora de puntuación de habilidad.'],
+    13: ['Secretos mágicos: 2 hechizos más de cualquier clase.'],
+    14: ['Rasgo de colegio bárdico (nv.14).'],
+    15: ['Inspiración bárdica: d12.'],
+    16: ['Mejora de puntuación de habilidad.'],
+    17: ['Secretos mágicos: 2 hechizos más de cualquier clase.'],
+    18: ['Superior inspiración: En iniciativa, si no tienes Inspiración bárdica disponible, recuperas 1 uso.'],
+    19: ['Mejora de puntuación de habilidad.'],
+    20: ['Palabra de creación: Acción para recuperar todos tus usos de Inspiración bárdica.']
+  },
+  Cleric: {
+    1:  ['Lanzamiento de hechizos (SAB): Conjuras hechizos de clérigo. CD = 8 + comp + SAB.',
+         'Dominio divino: Elige tu subclase (Vida, Luz, Naturaleza, Tempestad, Engaño, Guerra, Conocimiento). Ganas hechizos de dominio y rasgos.',
+         'Conjurar divinidad: Acción para canalizar energía divina. Vuelta a los no-muertos: no-muertos a 30 ft. deben superar TS SAB o ser vueltos o destruidos.'],
+    2:  ['Conjurar divinidad (1 uso). Se recarga en descanso corto o largo.'],
+    3:  [''],
+    4:  ['Mejora de puntuación de habilidad.'],
+    5:  ['Destruir no-muertos: Si un no-muerto falla la TS contra Vuelta, es destruido si su ND ≤ 1/2 (aumenta con el nivel).'],
+    6:  ['Conjurar divinidad (2 usos). Rasgo de dominio divino (nv.6).'],
+    7:  [''],
+    8:  ['Mejora de puntuación de habilidad.',
+         'Rasgo de dominio divino (nv.8). Destruir no-muertos mejorado.'],
+    9:  [''],
+    10: ['Intervención divina: Imploras la ayuda de tu deidad (posibilidad = nivel%). Si tiene éxito, no puedes usarlo de nuevo en 7 días.'],
+    11: ['Destruir no-muertos mejorado (ND ≤ 3).'],
+    12: ['Mejora de puntuación de habilidad.'],
+    13: [''],
+    14: ['Destruir no-muertos mejorado (ND ≤ 4).'],
+    15: [''],
+    16: ['Mejora de puntuación de habilidad.'],
+    17: ['Rasgo de dominio divino (nv.17). Destruir no-muertos mejorado (ND ≤ 4).'],
+    18: ['Conjurar divinidad (3 usos).'],
+    19: ['Mejora de puntuación de habilidad.'],
+    20: ['Intervención divina mejorada: Siempre funciona al nivel 20.']
+  },
+  Druid: {
+    1:  ['Lanzamiento de hechizos (SAB): Conjuras hechizos de druida. CD = 8 + comp + SAB.',
+         'Druídico: Conoces el idioma druídico secreto.'],
+    2:  ['Forma salvaje: 2 veces por descanso corto, te transformas en una bestia. ND máx = 1/4 (nv.2), 1/2 (nv.4, puedes nadar), 1 (nv.8, puedes volar).',
+         'Círculo druídico: Elige tu subclase (Tierra, Luna, etc.).'],
+    3:  [''],
+    4:  ['Mejora de puntuación de habilidad.',
+         'Forma salvaje mejorada: ND máx 1/2, puedes nadar.'],
+    5:  [''],
+    6:  ['Rasgo de círculo druídico (nv.6).'],
+    7:  [''],
+    8:  ['Mejora de puntuación de habilidad.',
+         'Forma salvaje mejorada: ND máx 1, puedes volar.'],
+    9:  [''],
+    10: ['Rasgo de círculo druídico (nv.10).'],
+    11: [''],
+    12: ['Mejora de puntuación de habilidad.'],
+    13: [''],
+    14: ['Rasgo de círculo druídico (nv.14).'],
+    15: [''],
+    16: ['Mejora de puntuación de habilidad.'],
+    17: [''],
+    18: ['Cuerpo atemporal: Por cada 10 años que envejeces, solo envejeces 1.',
+         'Bestia hechicera: Puedes lanzar hechizos en Forma salvaje.'],
+    19: ['Mejora de puntuación de habilidad.'],
+    20: ['Archidruida: Usos ilimitados de Forma salvaje.']
   },
   Fighter: {
-    2:  ['Oleada de acción: Puedes tomar una acción adicional en tu turno. 1 uso entre descansos cortos (2 usos al nivel 17).'],
-    3:  ['Arquetipo marcial: Elige tu subclase de guerrero.'],
+    1:  ['Estilo de combate: Elige un estilo (Arquería, Defensa, Duelo, Gran arma, Protección, Lucha con dos armas).',
+         '2º Aliento: Acción adicional para recuperar 1d10 + nivel PG. 1 uso por descanso corto.'],
+    2:  ['Oleada de acción: Toma una acción adicional en tu turno. 1 uso por descanso corto (2 usos al nv.17).'],
+    3:  ['Arquetipo marcial: Elige tu subclase (Campeón, Maestro de batalla, Caballero de hechizos, etc.).'],
     4:  ['Mejora de puntuación de habilidad.'],
-    5:  ['Extra ataque: Puedes atacar dos veces al usar la acción de Atacar.'],
+    5:  ['Extra ataque: Atacas dos veces al usar la acción de Atacar.'],
     6:  ['Mejora de puntuación de habilidad.'],
-    7:  ['Rasgo de arquetipo marcial: nivel 7 de tu subclase.'],
+    7:  ['Rasgo de arquetipo marcial (nv.7).'],
     8:  ['Mejora de puntuación de habilidad.'],
-    9:  ['Indomable: Puedes repetir una tirada de salvación fallida. Debes usar el nuevo resultado. 1 uso por descanso largo (2 usos al nivel 13, 3 al nivel 17).'],
-    10: ['Rasgo de arquetipo marcial: nivel 10 de tu subclase.'],
-    11: ['Extra ataque (2): Puedes atacar tres veces al usar la acción de Atacar.'],
+    9:  ['Indomable: Repite una TS fallida (debes usar el nuevo resultado). 1 uso por descanso largo.'],
+    10: ['Rasgo de arquetipo marcial (nv.10).'],
+    11: ['Extra ataque (2): Atacas tres veces al usar la acción de Atacar.'],
     12: ['Mejora de puntuación de habilidad.'],
-    13: ['Indomable (2 usos).'],
+    13: ['Indomable (2 usos por descanso largo).'],
     14: ['Mejora de puntuación de habilidad.'],
-    15: ['Rasgo de arquetipo marcial: nivel 15 de tu subclase.'],
+    15: ['Rasgo de arquetipo marcial (nv.15).'],
     16: ['Mejora de puntuación de habilidad.'],
     17: ['Oleada de acción (2 usos). Indomable (3 usos).'],
-    18: ['Rasgo de arquetipo marcial: nivel 18 de tu subclase.'],
+    18: ['Rasgo de arquetipo marcial (nv.18).'],
     19: ['Mejora de puntuación de habilidad.'],
-    20: ['Extra ataque (3): Puedes atacar cuatro veces al usar la acción de Atacar.']
+    20: ['Extra ataque (3): Atacas cuatro veces al usar la acción de Atacar.']
+  },
+  Monk: {
+    1:  ['Artes marciales: Puedes usar DES en lugar de FUE para ataques sin armas y armas de monje. Dado de artes marciales: d4 (nv.1-4), d6 (nv.5-10), d8 (nv.11-16), d10 (nv.17+). Golpe adicional: 1 ataque sin armas como acción adicional tras atacar.',
+         'Defensa sin armadura: Sin armadura y sin escudo, CA = 10 + mod DES + mod SAB.'],
+    2:  ['Ki: Puntos de ki = nivel. Se recuperan en descanso corto. Flurry of Blows (2ki): 2 ataques sin armas adicionales. Patient Defense (1ki): Esquivar como acción adicional. Step of the Wind (1ki): Desengancharse o Cargar como acción adicional, salto doble.',
+         'Movimiento sin armadura: Velocidad +10 ft. sin armadura (aumenta cada 4 niveles).'],
+    3:  ['Tradición monástica: Elige tu subclase (Puño Abierto, Sombra, Cuatro Elementos, etc.).',
+         'Desviar proyectiles: Reacción para reducir 1d10+DES+nivel daño de proyectil. Si lo reduces a 0, puedes devolverlo.'],
+    4:  ['Mejora de puntuación de habilidad.',
+         'Caída lenta: Reacción para reducir daño de caída en 5 × nivel.'],
+    5:  ['Extra ataque: Atacas dos veces al usar la acción de Atacar.',
+         'Golpe aturdidor (1ki): Tras impactar, el objetivo TS CON CD (8+comp+SAB) o queda aturdido hasta fin de tu siguiente turno.'],
+    6:  ['Golpe Ki: Tus ataques sin armas se consideran mágicos.',
+         'Rasgo de tradición monástica (nv.6).'],
+    7:  ['Evasión: TS DES con éxito = 0 daño; fallo = mitad.',
+         'Quietud mental (4ki): Acción para terminar 1 efecto de encantamiento o susto.'],
+    8:  ['Mejora de puntuación de habilidad.'],
+    9:  ['Paso ininterrumpido: Puedes correr por superficies líquidas y verticales sin caer.'],
+    10: ['Pureza de cuerpo: Inmune a enfermedad y veneno.',
+         'Rasgo de tradición monástica (nv.10).'],
+    11: ['Rasgo de tradición monástica (nv.11).'],
+    12: ['Mejora de puntuación de habilidad.'],
+    13: ['Lengua del sol y la luna: Entiendes todos los idiomas hablados.'],
+    14: ['Alma de diamante: Competencia en todas las tiradas de salvación. Puedes repetir una TS fallida (1/descanso largo).'],
+    15: ['Cuerpo atemporal: No envejeces y no puedes ser envejecido mágicamente. No necesitas comer, beber ni dormir.'],
+    16: ['Mejora de puntuación de habilidad.'],
+    17: ['Rasgo de tradición monástica (nv.17).'],
+    18: ['Vacío del ser (3ki): Como acción adicional, gastas 3 ki para ser invisible y tener ventaja en ataques hasta fin del turno.'],
+    19: ['Mejora de puntuación de habilidad.'],
+    20: ['Perfecto ser: FUE, DES, CON y SAB aumentan en 2 cada uno. Sus máximos ahora son 25.']
+  },
+  Paladin: {
+    1:  ['Sentido divino: Como acción, sientes cualquier celestial, infernal o no-muerto a 60 ft. Usos = 1 + mod CAR por descanso largo.',
+         'Imponer las manos: Piscina de curación = 5 × nivel de paladín. Puedes curar tocando a una criatura, o gastar 5 PG para curar enfermedad o neutralizar veneno.'],
+    2:  ['Estilo de combate: Elige un estilo (Defensa, Duelo, Gran arma, Protección).',
+         'Lanzamiento de hechizos (CAR): CD = 8 + comp + CAR.',
+         'Smite divino: Al impactar con arma, gasta espacio de hechizo para causar 2d8 radiante por nivel del espacio (+1d8 vs no-muertos/infernales). Máximo 5d8.'],
+    3:  ['Salud divina: Inmune a enfermedades.',
+         'Juramento sagrado: Elige tu subclase (Devoción, Ancianos, Venganza, etc.). Ganas el rasgo Conjurar divinidad.',
+         'Conjurar divinidad: 1 uso por descanso corto.'],
+    4:  ['Mejora de puntuación de habilidad.'],
+    5:  ['Extra ataque: Atacas dos veces al usar la acción de Atacar.'],
+    6:  ['Aura de protección: Tú y aliados a 10 ft. añaden tu mod CAR (mín +1) a sus TS. Aumenta a 30 ft. al nv.18.',
+         'Rasgo de juramento sagrado (nv.6).'],
+    7:  [''],
+    8:  ['Mejora de puntuación de habilidad.'],
+    9:  [''],
+    10: ['Aura de valentía: Tú y aliados a 10 ft. no podéis ser asustados mientras estés consciente.'],
+    11: ['Smite divino mejorado: Siempre causas 1d8 radiante adicional con armas.'],
+    12: ['Mejora de puntuación de habilidad.'],
+    13: [''],
+    14: ['Toque purificador: Acción para terminar un hechizo sobre ti o aliado que toques. Usos = mod CAR por descanso largo.'],
+    15: ['Rasgo de juramento sagrado (nv.15).'],
+    16: ['Mejora de puntuación de habilidad.'],
+    17: [''],
+    18: ['Aura mejorada: Las auras de Protección y Valentía aumentan a 30 ft.'],
+    19: ['Mejora de puntuación de habilidad.'],
+    20: ['Rasgo de juramento sagrado (nv.20). Normalmente una forma sagrada poderosa.']
+  },
+  Ranger: {
+    1:  ['Enemigo favorito: Elige 1 tipo de criatura (aberraciones, bestias, celestiales, constructos, dragones, elementales, hadas, infernales, gigantes, monstruosidades, cienos, plantas, no-muertos) o 2 razas de humanoides. Ventaja en Supervivencia para rastrearlos, y en INT para recordarlos.',
+         'Explorador natural: Elige 1 tipo de terreno. Ventajas en Naturaleza y Supervivencia ahí, doble comp en esas habilidades, no te puedes perder por medios no mágicos, velocidad normal en terreno difícil.'],
+    2:  ['Estilo de combate: Elige un estilo (Arquería, Defensa, Duelo, Lucha con dos armas).',
+         'Lanzamiento de hechizos (SAB): CD = 8 + comp + SAB.'],
+    3:  ['Arquetipo de explorador: Elige tu subclase (Cazador, Maestro de bestias, etc.).',
+         'Conciencia primitiva: Gasta 1 espacio de hechizo para detectar ciertos tipos de criaturas en 1 milla (6 millas en tu terreno favorito).'],
+    4:  ['Mejora de puntuación de habilidad.'],
+    5:  ['Extra ataque: Atacas dos veces al usar la acción de Atacar.'],
+    6:  ['Enemigo favorito mejorado: 1 tipo adicional. Terraín favorito: 1 terreno adicional.'],
+    7:  ['Rasgo de arquetipo de explorador (nv.7).'],
+    8:  ['Mejora de puntuación de habilidad.',
+         'Paso de las tierras: Ignorar terreno difícil no mágico. Puedes pasar a través de plantas sin dificultad.'],
+    9:  [''],
+    10: ['Terreno favorito adicional.',
+         'Ocultar en la naturaleza: Puedes intentar esconderte incluso si solo tienes cobertura parcial.'],
+    11: ['Rasgo de arquetipo de explorador (nv.11).'],
+    12: ['Mejora de puntuación de habilidad.'],
+    13: [''],
+    14: ['Enemigo favorito: 1 tipo adicional.',
+         'Sentido del desaparecido: No puedes ser sorprendido mientras estés consciente.'],
+    15: ['Rasgo de arquetipo de explorador (nv.15).'],
+    16: ['Mejora de puntuación de habilidad.'],
+    17: [''],
+    18: ['Sentidos salvajes: 30 ft. visión ciega.',
+         'Paso feral: No provocas ataques de oportunidad cuando te mueves.'],
+    19: ['Mejora de puntuación de habilidad.'],
+    20: ['Enemigo slayer: 1 vez por turno al impactar tu enemigo favorito, añades mod SAB al daño y el objetivo hace TS SAB CD (8+comp+SAB) o tiene desventaja en ataques hasta fin de su siguiente turno.']
   },
   Rogue: {
-    2:  ['Acción astuta: Puedes usar una acción adicional para Cargar, Desengancharse, o Esconderse.'],
-    3:  ['Arquetipo pícaro: Elige tu subclase de pícaro.'],
+    1:  ['Ataque furtivo: 1 vez por turno, causas daño adicional si tienes ventaja en el ataque o si un aliado está adyacente al objetivo. Daño: 1d6 (nv.1), aumenta 1d6 cada 2 niveles hasta 10d6 (nv.19).',
+         'Jerga de ladrones: Conoces un lenguaje secreto de mensajes ocultos.',
+         'Pericia: Tu bonificador de competencia se duplica en 2 habilidades.'],
+    2:  ['Acción astuta: Acción adicional para Cargar, Desengancharse o Esconderse.'],
+    3:  ['Arquetipo pícaro: Elige tu subclase (Ladrón, Asesino, Trickster arcano, etc.).',
+         'Ataque furtivo: 2d6.'],
+    4:  ['Mejora de puntuación de habilidad.',
+         'Ataque furtivo: 2d6.'],
+    5:  ['Golpe inesperado: Si fallas un ataque, puedes usarlo de todas formas. 1 vez por descanso largo.',
+         'Movimiento sin restricciones: No provocas ataques de oportunidad.',
+         'Ataque furtivo: 3d6.'],
+    6:  ['Pericia adicional: 2 habilidades más con competencia doble.',
+         'Ataque furtivo: 3d6.'],
+    7:  ['Evasión: TS DES éxito = 0 daño, fallo = mitad.',
+         'Ataque furtivo: 4d6.'],
+    8:  ['Mejora de puntuación de habilidad.',
+         'Ataque furtivo: 4d6.'],
+    9:  ['Rasgo de arquetipo pícaro (nv.9).',
+         'Ataque furtivo: 5d6.'],
+    10: ['Mejora de puntuación de habilidad.',
+         'Ataque furtivo: 5d6.'],
+    11: ['Talento confiable: En prueba de característica con competencia, el mínimo del dado es 10.',
+         'Ataque furtivo: 6d6.'],
+    12: ['Mejora de puntuación de habilidad.',
+         'Ataque furtivo: 6d6.'],
+    13: ['Rasgo de arquetipo pícaro (nv.13).',
+         'Ataque furtivo: 7d6.'],
+    14: ['Visión a ciegas: 10 ft. de visión ciega.',
+         'Ataque furtivo: 7d6.'],
+    15: ['Mente escurridiza: Competencia en TS de SAB.',
+         'Ataque furtivo: 8d6.'],
+    16: ['Mejora de puntuación de habilidad.',
+         'Ataque furtivo: 8d6.'],
+    17: ['Rasgo de arquetipo pícaro (nv.17).',
+         'Ataque furtivo: 9d6.'],
+    18: ['Esquivar: A menos que estés incapacitado, los ataques que te impactan tienen desventaja.',
+         'Ataque furtivo: 9d6.'],
+    19: ['Mejora de puntuación de habilidad.',
+         'Ataque furtivo: 10d6.'],
+    20: ['Golpe afortunado: Al atacar, puedes forzar al objetivo a tirar con desventaja en TS contra el ataque.',
+         'Ataque furtivo: 10d6.']
+  },
+  Sorcerer: {
+    1:  ['Lanzamiento de hechizos (CAR): CD = 8 + comp + CAR.',
+         'Origen de hechicero: Elige tu subclase (Linaje dracónico, Alma salvaje, etc.). Ganas rasgos según el origen.'],
+    2:  ['Fuente de magia: Puntos de hechicería = nivel. Se recuperan en descanso largo. Fuente flexible: Convierte espacios de hechizo en puntos (1 punto por nivel del espacio) o puntos en espacios.',
+         'Metamagia: Aprende 2 opciones (Hechizo acelerado, cuidadoso, extendido, intensificado, gemelo, sutil, transmutado). Gana 1 más en nv.10 y nv.17.'],
+    3:  [''],
     4:  ['Mejora de puntuación de habilidad.'],
-    5:  ['Golpe inesperado: Si fallas una tirada de ataque, puedes usarlo de todas formas una vez por descanso largo.',
-         'Movimiento sin restricciones: No provocas ataques de oportunidad cuando te mueves.'],
-    6:  ['Pericia adicional: Tu bonificador de competencia se duplica en dos habilidades más.'],
-    7:  ['Evasión: Cuando haces una TS de DES y tienes éxito, no recibes ningún daño. Si fallas, recibes la mitad.'],
+    5:  [''],
+    6:  ['Rasgo de origen de hechicero (nv.6).'],
+    7:  [''],
     8:  ['Mejora de puntuación de habilidad.'],
-    9:  ['Rasgo de arquetipo pícaro: nivel 9 de tu subclase.'],
-    10: ['Mejora de puntuación de habilidad.'],
-    11: ['Talento confiable: Cuando hagas una prueba de característica con la que tengas competencia, el mínimo del dado es 10.'],
+    9:  [''],
+    10: ['Metamagia adicional (1 opción más).'],
+    11: [''],
     12: ['Mejora de puntuación de habilidad.'],
-    13: ['Rasgo de arquetipo pícaro: nivel 13 de tu subclase.'],
-    14: ['Visión a ciegas: Tienes visión ciega en un radio de 3m.'],
-    15: ['Mente escurridiza: Ganas competencia en las tiradas de salvación de SAB.'],
+    13: [''],
+    14: ['Rasgo de origen de hechicero (nv.14).'],
+    15: [''],
     16: ['Mejora de puntuación de habilidad.'],
-    17: ['Rasgo de arquetipo pícaro: nivel 17 de tu subclase.'],
-    18: ['Esquivar: A menos que estés incapacitado, los ataques que te impactan tienen desventaja.'],
+    17: ['Metamagia adicional (1 opción más).'],
+    18: ['Rasgo de origen de hechicero (nv.18).'],
     19: ['Mejora de puntuación de habilidad.'],
-    20: ['Golpe afortunado: Cuando ataques a alguien, puedes obligarle a tirar la suerte (ventaja o desventaja en TS).']
+    20: ['Restauración de hechicería: Recuperas 4 puntos de hechicería al inicio de cada turno si tienes menos de 4.']
+  },
+  Warlock: {
+    1:  ['Patrón sobrenatural: Elige tu subclase (Archifey, Gran Anciano, Infernal, etc.). Ganas hechizos de patrón y rasgos.',
+         'Magia de patrón (CAR): CD = 8 + comp + CAR. Espacios de hechizo: todos del mismo nivel, se recuperan en descanso corto.'],
+    2:  ['Invocaciones eldritch: Aprende 2 invocaciones (poderes pasivos). Aprende más en nv.5, 7, 9, 12, 15, 18.',
+         'Maldición de brujo: Puedes maldecir una criatura. Tienes ventaja en percepción para detectarla y causas 1d6 adicional cuando la golpeas.'],
+    3:  ['Favor del patrón: Elige 1 don de pacto (Cadena, Hoja o Tomo).',
+         'Magia de patrón: Espacios de nivel 2.'],
+    4:  ['Mejora de puntuación de habilidad.'],
+    5:  ['Rasgo de patrón (nv.5).',
+         'Magia de patrón: Espacios de nivel 3. Invocaciones: 3 conocidas.'],
+    6:  ['Rasgo de patrón (nv.6).'],
+    7:  ['Magia de patrón: Espacios de nivel 4. Invocaciones: 4 conocidas.'],
+    8:  ['Mejora de puntuación de habilidad.'],
+    9:  ['Magia de patrón: Espacios de nivel 5. Invocaciones: 5 conocidas.'],
+    10: ['Rasgo de patrón (nv.10).'],
+    11: ['Magia Mística: 1 hechizo de nivel 6 por descanso largo (no gasta espacio).'],
+    12: ['Mejora de puntuación de habilidad. Invocaciones: 6 conocidas.'],
+    13: ['Magia Mística: 1 hechizo de nivel 7 por descanso largo.'],
+    14: ['Rasgo de patrón (nv.14).'],
+    15: ['Magia Mística: 1 hechizo de nivel 8 por descanso largo. Invocaciones: 7 conocidas.'],
+    16: ['Mejora de puntuación de habilidad.'],
+    17: ['Magia Mística: 1 hechizo de nivel 9 por descanso largo.'],
+    18: ['Invocaciones: 8 conocidas.'],
+    19: ['Mejora de puntuación de habilidad.'],
+    20: ['Conocimiento éldritch: Puedes lanzar un hechizo de nivel 5 o inferior de la lista de brujo sin gastar espacio. 1 uso por descanso largo.']
+  },
+  Wizard: {
+    1:  ['Lanzamiento de hechizos (INT): CD = 8 + comp + INT. Libro de hechizos: Tienes un libro con 6 hechizos de nv.1. Aprendes 2 más por nivel.',
+         'Recuperación arcana: Una vez por día tras descanso corto, recuperas espacios de hechizo cuyo nivel total ≤ mitad de tu nivel de mago (mín 1).'],
+    2:  ['Tradición arcana: Elige tu subclase (Abjuración, Evocación, Ilusión, Necromancia, Transmutación, Adivinación, etc.).'],
+    3:  [''],
+    4:  ['Mejora de puntuación de habilidad.'],
+    5:  [''],
+    6:  ['Rasgo de tradición arcana (nv.6).'],
+    7:  [''],
+    8:  ['Mejora de puntuación de habilidad.'],
+    9:  [''],
+    10: ['Rasgo de tradición arcana (nv.10).'],
+    11: [''],
+    12: ['Mejora de puntuación de habilidad.'],
+    13: [''],
+    14: ['Rasgo de tradición arcana (nv.14).'],
+    15: [''],
+    16: ['Mejora de puntuación de habilidad.'],
+    17: [''],
+    18: ['Dominio de hechizos: Elige 2 hechizos de nv.1 y 2 de nv.2. Puedes lanzarlos sin gastar espacio (1 vez cada uno por descanso corto).'],
+    19: ['Mejora de puntuación de habilidad.'],
+    20: ['Firma de hechizos: Elige 2 hechizos de nv.3. Siempre los tienes preparados y puedes lanzar cada uno 1 vez gratis por descanso largo.']
   }
 };
 
@@ -3001,9 +3351,10 @@ function onLevelChange() {
 
   // Check if there are features for this level
   var features = CLASS_LEVEL_FEATURES[cls] && CLASS_LEVEL_FEATURES[cls][level];
-  if (features && features.length) {
+  var validFeatures = features ? features.filter(function(f){ return f && f.trim(); }) : [];
+  if (validFeatures.length) {
     if (badge) badge.style.display = 'block';
-    pendingLevelFeatures = { level: level, cls: cls, features: features };
+    pendingLevelFeatures = { level: level, cls: cls, features: validFeatures };
   } else {
     if (badge) badge.style.display = 'none';
     pendingLevelFeatures = null;
@@ -3014,13 +3365,51 @@ function onLevelChange() {
 
 function showLevelFeatures() {
   if (!pendingLevelFeatures) return;
-  var modal = document.getElementById('level_modal');
-  var title = document.getElementById('level_modal_title');
+  var modal   = document.getElementById('level_modal');
+  var title   = document.getElementById('level_modal_title');
   var content = document.getElementById('level_modal_content');
-  title.textContent = pendingLevelFeatures.cls + ' — Nivel ' + pendingLevelFeatures.level;
-  content.innerHTML = pendingLevelFeatures.features.map(function(f) {
-    return '<div class="origin-trait" style="margin-bottom:8px"><p>' + f + '</p></div>';
-  }).join('');
+  var cls     = pendingLevelFeatures.cls;
+  var level   = pendingLevelFeatures.level;
+
+  title.textContent = cls + ' — Nivel ' + level;
+
+  // New features at this level
+  var newFeatures = pendingLevelFeatures.features.filter(function(f){ return f && f.trim(); });
+  var newHTML = '<div style="margin-bottom:14px">'
+    + '<div style="font-size:0.72rem;color:var(--gold2);letter-spacing:1px;font-family:var(--font-title);margin-bottom:8px">🆕 RASGOS NUEVOS EN NIVEL ' + level + '</div>'
+    + newFeatures.map(function(f) {
+        var parts = f.split(':');
+        var bold  = parts.length > 1 ? '<strong style="color:var(--gold2)">' + parts[0] + ':</strong>' : '';
+        var rest  = parts.length > 1 ? parts.slice(1).join(':') : f;
+        return '<div style="background:rgba(200,168,75,0.07);border-left:3px solid var(--gold);border-radius:0 var(--radius) var(--radius) 0;padding:8px 10px;margin-bottom:6px;font-size:0.84rem">'
+          + bold + rest + '</div>';
+      }).join('')
+    + '</div>';
+
+  // All features up to current level
+  var allHTML = '<div style="margin-top:10px">'
+    + '<div style="font-size:0.72rem;color:var(--text3);letter-spacing:1px;font-family:var(--font-title);margin-bottom:8px">📋 TODOS LOS RASGOS (nv.1–' + level + ')</div>';
+  var classFeatures = CLASS_LEVEL_FEATURES[cls] || {};
+  for (var lv = 1; lv <= level; lv++) {
+    var feats = classFeatures[lv];
+    if (!feats || !feats.length || (feats.length === 1 && !feats[0])) continue;
+    var validFeats = feats.filter(function(f){ return f && f.trim(); });
+    if (!validFeats.length) continue;
+    allHTML += '<div style="margin-bottom:8px">'
+      + '<div style="font-size:0.7rem;color:var(--gold);font-family:var(--font-title);margin-bottom:4px">Nv.' + lv + '</div>'
+      + validFeats.map(function(f) {
+          var parts = f.split(':');
+          var name = parts.length > 1 ? parts[0] : '';
+          var desc = parts.length > 1 ? parts.slice(1).join(':').trim() : f;
+          return '<div style="font-size:0.78rem;padding:3px 6px;border-bottom:1px solid var(--bg4)">'
+            + (name ? '<strong style="color:var(--text)">' + name + ':</strong> ' : '')
+            + desc + '</div>';
+        }).join('')
+      + '</div>';
+  }
+  allHTML += '</div>';
+
+  content.innerHTML = newHTML + allHTML;
   modal.style.display = 'block';
 }
 
@@ -5454,8 +5843,44 @@ function recalc() {
   // Initiative
   document.getElementById('disp_init').textContent = fmtMod(getMod(ab.dex));
 
-  // Speed
-  document.getElementById('disp_speed').textContent = classData.speed || 30;
+  // Speed — show 0 if agarrado/incapacitado
+  var condFx = getConditionEffects();
+  var baseSpeed = classData.speed || 30;
+  var dispSpeed = condFx.speedZero ? 0 : baseSpeed;
+  var speedEl = document.getElementById('disp_speed');
+  speedEl.textContent = dispSpeed;
+  speedEl.style.color = condFx.speedZero ? 'var(--red2)' : '';
+
+  // Show condition warning on attack area if relevant
+  var atkWarn = document.getElementById('condition_atk_warning');
+  if (atkWarn) {
+    if (condFx.incapacitated) {
+      atkWarn.textContent = '⚠ Incapacitado — no puede atacar';
+      atkWarn.style.display = 'block';
+      atkWarn.style.color = 'var(--red2)';
+    } else if (condFx.disadvantageAttacks && condFx.advantageAttacks) {
+      atkWarn.textContent = '⚖ Ventaja y desventaja se anulan';
+      atkWarn.style.display = 'block';
+      atkWarn.style.color = 'var(--gold2)';
+    } else if (condFx.disadvantageAttacks) {
+      atkWarn.textContent = '⬇ Desventaja en ataques por condición';
+      atkWarn.style.display = 'block';
+      atkWarn.style.color = '#e67e22';
+    } else if (condFx.advantageAttacks) {
+      atkWarn.textContent = '⬆ Ventaja en ataques (Invisible)';
+      atkWarn.style.display = 'block';
+      atkWarn.style.color = '#1abc9c';
+    } else if (condFx.prone) {
+      atkWarn.textContent = '⬇ Derribado: ataques cuerpo a cuerpo con ventaja, distancia con desventaja';
+      atkWarn.style.display = 'block';
+      atkWarn.style.color = '#e67e22';
+    } else {
+      atkWarn.style.display = 'none';
+    }
+  }
+
+  // Rebuild conditions to reflect any changes
+  buildConditions();
 
   // Prof bonus
   document.getElementById('disp_prof').textContent = fmtMod(prof);
@@ -5642,22 +6067,125 @@ function toggleDeathDot(type, idx) {
   saveCharacter();
 }
 
+var conditionPressTimer = null;
+
 function buildConditions() {
-  const container = document.getElementById('conditions_list');
+  var container = document.getElementById('conditions_list');
+  if (!container) return;
+
   container.innerHTML = CONDITIONS.map(function(c) {
-    var safeId = c.replace(/\s/g,'_');
-    var isActive = char.conditions.includes(c) ? 'active' : '';
-    return '<div class="condition-tag ' + isActive + '" id="cond_' + safeId + '" onclick="toggleCondition(\'' + c + '\')">' + c + '</div>';
+    var d = CONDITION_DATA[c] || { icon:'⚠', color:'var(--red2)' };
+    var isActive = (char.conditions || []).indexOf(c) > -1;
+    var colorClass = condColorClass(c);
+    var activeClass = isActive ? 'active ' + colorClass : '';
+
+    return '<div class="condition-tag ' + activeClass + '" id="cond_' + c.replace(/\s/g,'_') + '"'
+      + ' onclick="toggleCondition(\'' + c + '\')"'
+      + ' oncontextmenu="showConditionInfo(\'' + c + '\');return false;"'
+      + ' ontouchstart="startConditionPress(\'' + c + '\')"'
+      + ' ontouchend="clearConditionPress()"'
+      + ' ontouchmove="clearConditionPress()">'
+      + d.icon + ' ' + c
+      + (isActive ? ' <span style="font-size:0.65rem">✓</span>' : '')
+      + '</div>';
   }).join('');
+
+  updateConditionBanner();
+}
+
+function condColorClass(c) {
+  var map = {
+    'Envenenado':'cond-poison','Encantado':'cond-charm','Invisible':'cond-hidden',
+    'Ensordecido':'cond-gray','Agarrado':'cond-blue','Derribado':'cond-orange',
+    'Cegado':'cond-dark','Asustado':'cond-orange','Agotamiento':'cond-orange'
+  };
+  return map[c] || '';
 }
 
 function toggleCondition(name) {
-  const idx = char.conditions.indexOf(name);
+  if (!char.conditions) char.conditions = [];
+  var idx = char.conditions.indexOf(name);
   if (idx > -1) char.conditions.splice(idx, 1);
   else char.conditions.push(name);
-  const safeId = name.replace(/\s/g,'_');
-  document.getElementById('cond_' + safeId).classList.toggle('active', char.conditions.includes(name));
+  buildConditions();
+  recalc();
   saveCharacter();
+  // Show toast with main effect
+  var d = CONDITION_DATA[name];
+  if (d) {
+    var status = char.conditions.indexOf(name) > -1 ? '🔴 Activa' : '✅ Retirada';
+    showToast(d.icon + ' ' + name + ': ' + status);
+  }
+}
+
+function updateConditionBanner() {
+  var active = char.conditions || [];
+  var banner = document.getElementById('active_conditions_banner');
+  var pills  = document.getElementById('active_conditions_pills');
+  if (!banner || !pills) return;
+
+  if (!active.length) {
+    banner.style.display = 'none';
+    return;
+  }
+  banner.style.display = 'block';
+  pills.innerHTML = active.map(function(c) {
+    var d = CONDITION_DATA[c] || { icon:'⚠', color:'var(--red2)' };
+    return '<span class="cond-pill" style="background:' + d.color + '22;border:1px solid ' + d.color + ';color:' + d.color + '"'
+      + ' onclick="showConditionInfo(\'' + c + '\')">'
+      + d.icon + ' ' + c + '</span>';
+  }).join('');
+}
+
+function showConditionInfo(name) {
+  var d = CONDITION_DATA[name];
+  if (!d) return;
+  var tooltip = document.getElementById('condition_tooltip');
+  var title   = document.getElementById('cond_tooltip_title');
+  var body    = document.getElementById('cond_tooltip_body');
+  if (!tooltip) return;
+  title.textContent = d.icon + ' ' + name;
+  title.style.color = d.color;
+  body.textContent  = d.effect;
+  tooltip.style.display = 'block';
+}
+
+function hideConditionTooltip() {
+  var t = document.getElementById('condition_tooltip');
+  if (t) t.style.display = 'none';
+}
+
+function startConditionPress(name) {
+  clearConditionPress();
+  conditionPressTimer = setTimeout(function() { showConditionInfo(name); }, 500);
+}
+
+function clearConditionPress() {
+  if (conditionPressTimer) { clearTimeout(conditionPressTimer); conditionPressTimer = null; }
+}
+
+// Returns mechanical effects of active conditions for recalc
+function getConditionEffects() {
+  var active = char.conditions || [];
+  return {
+    disadvantageAttacks: active.some(function(c) {
+      var d = CONDITION_DATA[c];
+      return d && (d.mechanic === 'disadvantage_attacks' || d.mechanic === 'incapacitated');
+    }),
+    advantageAttacks: active.some(function(c) {
+      var d = CONDITION_DATA[c];
+      return d && d.mechanic === 'advantage_attacks';
+    }),
+    speedZero: active.some(function(c) {
+      var d = CONDITION_DATA[c];
+      return d && (d.mechanic === 'speed_zero' || d.mechanic === 'incapacitated');
+    }),
+    incapacitated: active.some(function(c) {
+      var d = CONDITION_DATA[c];
+      return d && d.mechanic === 'incapacitated';
+    }),
+    prone: active.indexOf('Derribado') > -1
+  };
 }
 
 function buildSkillRollButtons() {
