@@ -870,6 +870,89 @@ input[type="number"] { text-align: center; }
 .monster-result-name { font-weight: 600; font-size: 0.85rem; }
 .monster-result-meta { font-size: 0.72rem; color: var(--text3); text-align: right; }
 
+/* ── Global Search ───────────────────────────────────────── */
+.gs-section-title {
+  font-size: 0.68rem;
+  color: var(--gold2);
+  letter-spacing: 2px;
+  font-family: var(--font-title);
+  padding: 8px 6px 4px;
+  border-bottom: 1px solid var(--border2);
+  margin-bottom: 2px;
+}
+.gs-result-item {
+  padding: 8px 10px;
+  border-bottom: 1px solid var(--bg4);
+  cursor: pointer;
+  border-radius: 4px;
+  transition: background 0.15s;
+}
+.gs-result-item:hover { background: var(--bg3); }
+.gs-result-name { font-weight: 600; font-size: 0.88rem; color: var(--text); }
+.gs-result-meta { font-size: 0.72rem; color: var(--text3); margin-top: 2px; }
+.gs-filter.active { background: rgba(200,168,75,0.15); border-color: var(--gold); color: var(--gold); }
+
+/* ── Journal ─────────────────────────────────────────────── */
+.journal-tab-btn { font-size:0.75rem; }
+.journal-tab-btn.active { background:rgba(200,168,75,0.15); border-color:var(--gold); color:var(--gold); }
+.journal-tab-panel { animation: fadeIn 0.2s ease; }
+.journal-entry-card {
+  background: var(--bg3);
+  border: 1px solid var(--border2);
+  border-radius: var(--radius);
+  padding: 10px 12px;
+  margin-bottom: 8px;
+}
+.journal-entry-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 4px;
+}
+.journal-entry-title {
+  font-family: var(--font-title);
+  color: var(--gold);
+  font-size: 0.9rem;
+}
+.journal-entry-meta {
+  font-size: 0.72rem;
+  color: var(--text3);
+}
+.journal-entry-body {
+  font-size: 0.82rem;
+  color: var(--text2);
+  line-height: 1.5;
+  white-space: pre-wrap;
+}
+.attitude-badge {
+  display: inline-block;
+  font-size: 0.68rem;
+  padding: 1px 6px;
+  border-radius: 10px;
+  margin-left: 6px;
+}
+.attitude-aliado    { background:rgba(92,184,92,0.15);  color:#5cb85c;  border:1px solid #5cb85c; }
+.attitude-neutral   { background:rgba(149,165,166,0.15);color:#95a5a6; border:1px solid #95a5a6; }
+.attitude-hostil    { background:rgba(231,76,60,0.15);  color:var(--red2); border:1px solid var(--red2); }
+.attitude-desconocido { background:rgba(200,168,75,0.1); color:var(--gold2); border:1px solid var(--gold2); }
+.quest-activa     { border-left:3px solid #f0ad4e; }
+.quest-completada { border-left:3px solid #5cb85c; }
+.quest-fallida    { border-left:3px solid var(--red2); }
+.quest-secundaria { border-left:3px solid #5bb3e8; }
+
+/* ── Tutorial ─────────────────────────────────────────────── */
+.tutorial-step { display:none; animation:fadeIn 0.3s ease; }
+.tutorial-step.active { display:block; }
+.tutorial-step-icon { font-size:2.5rem; text-align:center; margin-bottom:12px; }
+.tutorial-step-title { font-family:var(--font-title); font-size:1.1rem; color:var(--gold); letter-spacing:1px; text-align:center; margin-bottom:14px; }
+.tutorial-step-body { font-size:0.88rem; color:var(--text2); line-height:1.7; }
+.tutorial-step-body p { margin-bottom:8px; }
+.tutorial-tip { background:rgba(200,168,75,0.08); border-left:3px solid var(--gold); border-radius:0 var(--radius) var(--radius) 0; padding:8px 12px; margin-top:12px; font-size:0.82rem; color:var(--text2); }
+.tut-dot { width:8px; height:8px; border-radius:50%; background:var(--border2); cursor:pointer; transition:background 0.2s; }
+.tut-dot.active { background:var(--gold); }
+@keyframes fadeIn { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
+@keyframes critPop { 0%{transform:scale(0.5);opacity:0} 60%{transform:scale(1.2)} 100%{transform:scale(1);opacity:1} }
+
 .dm-ref-title {
   font-family: var(--font-title);
   font-size: 0.82rem;
@@ -1448,6 +1531,8 @@ input[type="number"] { text-align: center; }
     <button class="btn-sm" onclick="exportCharacter()" title="Exportar JSON" style="font-size:0.7rem;">💾 JSON</button>
     <button class="btn-sm" onclick="printCharSheet()" title="Imprimir / Exportar PDF" style="margin-right:4px;font-size:0.7rem;">🖨 PDF</button>
     <button class="btn-save" onclick="saveCharacter()">💾 Guardar</button>
+    <button class="btn-sm" onclick="openGlobalSearch()" title="Búsqueda global" style="font-size:0.8rem;padding:6px 10px;border-radius:50%;min-width:32px">🔍</button>
+    <button class="btn-sm" onclick="showTutorial()" title="Ayuda / Tutorial" style="font-size:0.8rem;padding:6px 10px;border-radius:50%;min-width:32px">?</button>
     <input type="file" id="import_file_input" accept=".json,.dnd5e.json" style="display:none" onchange="handleImport(event)">
   </div>
 </header>
@@ -1655,6 +1740,15 @@ input[type="number"] { text-align: center; }
           <div class="death-dots" id="death_failure"></div>
         </div>
       </div>
+    </div>
+    <!-- Botones de descanso -->
+    <div style="display:flex;gap:8px;margin-top:12px">
+      <button class="btn-sm" onclick="recoverShortRest()" style="flex:1;background:rgba(41,128,185,0.12);border-color:#5bb3e8;color:#5bb3e8;font-size:0.75rem">
+        ☀ Descanso Corto
+      </button>
+      <button class="btn-sm" onclick="recoverLongRest()" style="flex:1;background:rgba(200,168,75,0.12);border-color:var(--gold);color:var(--gold);font-size:0.75rem">
+        🌙 Descanso Largo
+      </button>
     </div>
   </div>
 
@@ -1877,6 +1971,12 @@ input[type="number"] { text-align: center; }
     <div id="custom_attacks_list"></div>
   </div>
 
+  <!-- RECURSOS DE CLASE -->
+  <div id="class_resources_panel" style="display:none;margin-bottom:4px">
+    <p class="section-title">⚡ Recursos de Clase</p>
+    <div class="card" id="class_resources_content"></div>
+  </div>
+
   <p class="section-title">Magia de Combate</p>
   <div class="card grid-3">
     <div class="derived-box">
@@ -1948,6 +2048,19 @@ input[type="number"] { text-align: center; }
   </div>
 
   <p class="section-title">Hechizos del Personaje</p>
+
+  <!-- Cabecera inteligente según clase -->
+  <div id="spell_list_header" style="margin-bottom:8px;display:none">
+    <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:8px">
+      <div id="spell_prep_info" style="font-size:0.8rem;color:var(--text2);flex:1"></div>
+      <div style="display:flex;gap:6px">
+        <button class="btn-sm spell-list-filter active" data-spfilter="all" onclick="filterSpellList('all')" style="font-size:0.72rem">Todos</button>
+        <button class="btn-sm spell-list-filter" data-spfilter="prepared" onclick="filterSpellList('prepared')" style="font-size:0.72rem;color:#5bb3e8;border-color:#5bb3e8">✓ Preparados</button>
+        <button class="btn-sm spell-list-filter" data-spfilter="unprepared" onclick="filterSpellList('unprepared')" style="font-size:0.72rem">Sin preparar</button>
+      </div>
+    </div>
+  </div>
+
   <div class="card" id="char_spells_container">
     <p class="empty-msg">No hay hechizos añadidos</p>
   </div>
@@ -2001,6 +2114,15 @@ input[type="number"] { text-align: center; }
       <div><label>&nbsp;</label><button class="btn-add" onclick="addInventoryItem()">+ Añadir</button></div>
     </div>
     <p style="font-size:0.78rem;color:var(--text3);">También puedes escribir cualquier objeto libremente — no requiere base de datos.</p>
+    <div style="margin-top:10px;border-top:1px solid var(--border2);padding-top:10px">
+      <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+        <span style="font-size:0.78rem;color:var(--text2)">⚔ Equipo inicial de clase:</span>
+        <button class="btn-sm" onclick="applyStartingEquipment()" style="background:rgba(200,168,75,0.12);border-color:var(--gold);color:var(--gold)">
+          ✚ Aplicar equipo de clase
+        </button>
+        <span style="font-size:0.72rem;color:var(--text3)">Añade al inventario actual</span>
+      </div>
+    </div>
   </div>
 
   <p class="section-title">Objetos Equipados / Cargados</p>
@@ -2131,41 +2253,165 @@ input[type="number"] { text-align: center; }
 ══════════════════════════════════════════════ -->
 <div id="tab-sessions" class="tab-panel">
 
-  <p class="section-title">Nueva Entrada de Sesión</p>
-  <div class="card">
-    <div class="grid-2" style="margin-bottom:10px">
-      <div>
-        <label>Número de sesión</label>
-        <input type="number" id="session_number" value="1" min="1" style="max-width:100px">
-      </div>
-      <div>
-        <label>Fecha</label>
-        <input type="text" id="session_date" placeholder="ej: 17 Mar 2026">
-      </div>
-    </div>
-    <div style="margin-bottom:10px">
-      <label>Título de la sesión</label>
-      <input type="text" id="session_title" placeholder="ej: La Mazmorra de los Ecos">
-    </div>
-    <div style="margin-bottom:10px">
-      <label>Resumen / Notas</label>
-      <textarea class="notes-area" id="session_notes" style="min-height:100px" placeholder="¿Qué pasó en esta sesión? NPCs conocidos, lugares visitados, objetos encontrados..."></textarea>
-    </div>
-    <div style="margin-bottom:10px">
-      <label>XP ganada en esta sesión</label>
-      <input type="number" id="session_xp" value="0" min="0" style="max-width:120px">
-    </div>
-    <div style="text-align:right">
-      <button class="btn-add" onclick="addSession()">+ Guardar sesión</button>
-    </div>
+  <!-- Pestañas internas del diario -->
+  <div style="display:flex;gap:6px;margin-bottom:12px;flex-wrap:wrap">
+    <button class="btn-sm journal-tab-btn active" data-jtab="journal_sessions" onclick="switchJournalTab('journal_sessions')">📖 Sesiones</button>
+    <button class="btn-sm journal-tab-btn" data-jtab="journal_npcs" onclick="switchJournalTab('journal_npcs')">👥 PNJs</button>
+    <button class="btn-sm journal-tab-btn" data-jtab="journal_places" onclick="switchJournalTab('journal_places')">🗺 Lugares</button>
+    <button class="btn-sm journal-tab-btn" data-jtab="journal_quests" onclick="switchJournalTab('journal_quests')">📜 Quests</button>
+    <button class="btn-sm journal-tab-btn" data-jtab="journal_loot" onclick="switchJournalTab('journal_loot')">💰 Tesoro</button>
   </div>
 
-  <p class="section-title">Historial de Sesiones</p>
-  <div id="sessions_list">
-    <p class="empty-msg">No hay sesiones registradas todavía</p>
+  <!-- ── SESIONES ── -->
+  <div id="journal_sessions" class="journal-tab-panel">
+    <p class="section-title">Nueva Entrada</p>
+    <div class="card" style="margin-bottom:10px">
+      <div class="grid-2" style="margin-bottom:8px">
+        <div>
+          <label>Número</label>
+          <input type="number" id="session_number" value="1" min="1" style="max-width:90px">
+        </div>
+        <div>
+          <label>Fecha</label>
+          <input type="text" id="session_date" placeholder="ej: 17 Mar 2026">
+        </div>
+      </div>
+      <div style="margin-bottom:8px">
+        <label>Título</label>
+        <input type="text" id="session_title" placeholder="ej: La Mazmorra de los Ecos">
+      </div>
+      <div style="margin-bottom:8px">
+        <label>¿Qué pasó?</label>
+        <textarea class="notes-area" id="session_notes" style="min-height:80px" placeholder="Resumen de eventos principales..."></textarea>
+      </div>
+      <div style="margin-bottom:8px">
+        <label>Logros / Momentos destacados</label>
+        <textarea class="notes-area" id="session_highlights" style="min-height:50px" placeholder="Combates épicos, decisiones importantes, giros de trama..."></textarea>
+      </div>
+      <div class="grid-2" style="margin-bottom:8px">
+        <div>
+          <label>XP ganada</label>
+          <input type="number" id="session_xp" value="0" min="0">
+        </div>
+        <div>
+          <label>Oro ganado (po)</label>
+          <input type="number" id="session_gold" value="0" min="0">
+        </div>
+      </div>
+      <div style="text-align:right">
+        <button class="btn-add" onclick="addSession()">+ Guardar sesión</button>
+      </div>
+    </div>
+
+    <p class="section-title">Historial</p>
+    <div id="sessions_list"><p class="empty-msg">No hay sesiones registradas</p></div>
+    <div id="session_xp_total" style="text-align:right;font-family:var(--font-title);font-size:0.85rem;color:var(--gold2);margin-top:8px"></div>
   </div>
 
-  <div id="session_xp_total" style="text-align:right;font-family:var(--font-title);font-size:0.85rem;color:var(--gold2);margin-top:8px"></div>
+  <!-- ── PNJs ── -->
+  <div id="journal_npcs" class="journal-tab-panel" style="display:none">
+    <p class="section-title">Añadir PNJ</p>
+    <div class="card" style="margin-bottom:10px">
+      <div class="grid-2" style="margin-bottom:8px">
+        <div><label>Nombre</label><input type="text" id="npc_j_name" placeholder="Nombre del PNJ"></div>
+        <div>
+          <label>Actitud</label>
+          <select id="npc_j_attitude">
+            <option value="aliado">😊 Aliado</option>
+            <option value="neutral">😐 Neutral</option>
+            <option value="hostil">😠 Hostil</option>
+            <option value="desconocido">❓ Desconocido</option>
+          </select>
+        </div>
+      </div>
+      <div style="margin-bottom:8px"><label>Rol / Descripción</label><input type="text" id="npc_j_role" placeholder="ej: Tabernero de Rasputín, enano gruñón pero justo"></div>
+      <div style="margin-bottom:8px"><label>Notas / Información</label><textarea class="notes-area" id="npc_j_notes" style="min-height:60px" placeholder="Lo que sabes sobre este personaje..."></textarea></div>
+      <div style="text-align:right"><button class="btn-add" onclick="addJournalNPC()">+ Añadir PNJ</button></div>
+    </div>
+    <p class="section-title">PNJs Conocidos</p>
+    <div id="journal_npcs_list"><p class="empty-msg">Ningún PNJ registrado</p></div>
+  </div>
+
+  <!-- ── LUGARES ── -->
+  <div id="journal_places" class="journal-tab-panel" style="display:none">
+    <p class="section-title">Añadir Lugar</p>
+    <div class="card" style="margin-bottom:10px">
+      <div class="grid-2" style="margin-bottom:8px">
+        <div><label>Nombre</label><input type="text" id="place_j_name" placeholder="Nombre del lugar"></div>
+        <div>
+          <label>Tipo</label>
+          <select id="place_j_type">
+            <option value="ciudad">🏙 Ciudad / Pueblo</option>
+            <option value="mazmorra">🏚 Mazmorra / Ruina</option>
+            <option value="taberna">🍺 Taberna / Posada</option>
+            <option value="templo">⛪ Templo / Santuario</option>
+            <option value="bosque">🌲 Naturaleza</option>
+            <option value="otro">📍 Otro</option>
+          </select>
+        </div>
+      </div>
+      <div style="margin-bottom:8px"><label>Descripción</label><textarea class="notes-area" id="place_j_notes" style="min-height:60px" placeholder="Apariencia, habitantes notables, historia, peligros..."></textarea></div>
+      <div style="text-align:right"><button class="btn-add" onclick="addJournalPlace()">+ Añadir lugar</button></div>
+    </div>
+    <p class="section-title">Lugares Visitados</p>
+    <div id="journal_places_list"><p class="empty-msg">Ningún lugar registrado</p></div>
+  </div>
+
+  <!-- ── QUESTS ── -->
+  <div id="journal_quests" class="journal-tab-panel" style="display:none">
+    <p class="section-title">Añadir Quest</p>
+    <div class="card" style="margin-bottom:10px">
+      <div class="grid-2" style="margin-bottom:8px">
+        <div><label>Nombre de la quest</label><input type="text" id="quest_j_name" placeholder="ej: Recuperar el Amuleto de Aldric"></div>
+        <div>
+          <label>Estado</label>
+          <select id="quest_j_status">
+            <option value="activa">🟡 Activa</option>
+            <option value="completada">✅ Completada</option>
+            <option value="fallida">❌ Fallida</option>
+            <option value="secundaria">🔵 Secundaria</option>
+          </select>
+        </div>
+      </div>
+      <div style="margin-bottom:8px"><label>Descripción / Objetivos</label><textarea class="notes-area" id="quest_j_notes" style="min-height:60px" placeholder="¿Qué hay que hacer? ¿Quién lo pidió? ¿Qué recompensa hay?"></textarea></div>
+      <div style="text-align:right"><button class="btn-add" onclick="addJournalQuest()">+ Añadir quest</button></div>
+    </div>
+    <div style="display:flex;gap:6px;margin-bottom:8px;flex-wrap:wrap">
+      <button class="btn-sm" onclick="filterQuests('todas')" style="font-size:0.72rem">Todas</button>
+      <button class="btn-sm" onclick="filterQuests('activa')" style="font-size:0.72rem;color:#f0ad4e;border-color:#f0ad4e">🟡 Activas</button>
+      <button class="btn-sm" onclick="filterQuests('completada')" style="font-size:0.72rem;color:#5cb85c;border-color:#5cb85c">✅ Completadas</button>
+      <button class="btn-sm" onclick="filterQuests('fallida')" style="font-size:0.72rem;color:var(--red2);border-color:var(--red2)">❌ Fallidas</button>
+    </div>
+    <div id="journal_quests_list"><p class="empty-msg">Ninguna quest registrada</p></div>
+  </div>
+
+  <!-- ── TESORO ── -->
+  <div id="journal_loot" class="journal-tab-panel" style="display:none">
+    <p class="section-title">Registrar Tesoro</p>
+    <div class="card" style="margin-bottom:10px">
+      <div class="grid-2" style="margin-bottom:8px">
+        <div><label>Descripción</label><input type="text" id="loot_j_name" placeholder="ej: Collar de zafiros, Espada +1"></div>
+        <div>
+          <label>Tipo</label>
+          <select id="loot_j_type">
+            <option value="monedas">💰 Monedas</option>
+            <option value="objeto">⚔ Objeto</option>
+            <option value="magico">✨ Objeto mágico</option>
+            <option value="gema">💎 Gema / Joya</option>
+            <option value="otro">📦 Otro</option>
+          </select>
+        </div>
+      </div>
+      <div class="grid-2" style="margin-bottom:8px">
+        <div><label>Valor (po)</label><input type="number" id="loot_j_value" value="0" min="0"></div>
+        <div><label>Sesión</label><input type="text" id="loot_j_session" placeholder="ej: Sesión 3"></div>
+      </div>
+      <div style="text-align:right"><button class="btn-add" onclick="addJournalLoot()">+ Añadir tesoro</button></div>
+    </div>
+    <p class="section-title">Registro de Tesoro</p>
+    <div id="journal_loot_list"><p class="empty-msg">Ningún tesoro registrado</p></div>
+    <div id="journal_loot_total" style="text-align:right;font-family:var(--font-title);font-size:0.85rem;color:var(--gold2);margin-top:8px"></div>
+  </div>
 
 </div>
 
@@ -2274,7 +2520,14 @@ input[type="number"] { text-align: center; }
 
     <p class="section-title">⚔ Tracker de Encuentro</p>
     <div class="card">
-      <div style="display:flex;gap:8px;margin-bottom:10px;flex-wrap:wrap">
+      <!-- Jugadores: iniciativa rápida -->
+      <div id="player_initiatives" style="display:none;margin-bottom:10px;padding-bottom:10px;border-bottom:1px solid var(--border2)">
+        <div style="font-size:0.72rem;color:var(--gold2);letter-spacing:1px;font-family:var(--font-title);margin-bottom:6px">INICIATIVAS DE JUGADORES</div>
+        <div id="player_init_inputs" style="display:flex;flex-wrap:wrap;gap:6px"></div>
+        <button class="btn-sm" onclick="addPlayersToTracker()" style="margin-top:6px;font-size:0.72rem;background:rgba(92,184,92,0.1);border-color:#5cb85c;color:#5cb85c">✚ Añadir al tracker</button>
+      </div>
+
+      <div style="display:flex;gap:8px;margin-bottom:8px;flex-wrap:wrap">
         <input type="text" id="enc_name" placeholder="Nombre (ej: Goblin)" style="flex:2;min-width:100px">
         <input type="number" id="enc_init" placeholder="Init" style="width:60px;text-align:center">
         <input type="number" id="enc_hp" placeholder="HP" style="width:60px;text-align:center">
@@ -2284,9 +2537,15 @@ input[type="number"] { text-align: center; }
       <div id="encounter_list">
         <p class="empty-msg">No hay criaturas en el encuentro</p>
       </div>
-      <div style="text-align:right;margin-top:8px;display:flex;gap:8px;justify-content:flex-end">
-        <button class="btn-sm" onclick="sortByInitiative()" style="font-size:0.68rem">↕ Ordenar por iniciativa</button>
-        <button class="btn-sm" onclick="clearEncounter()" style="font-size:0.68rem;border-color:#e74c3c;color:#e74c3c">✕ Limpiar</button>
+      <div style="margin-top:8px;display:flex;gap:6px;flex-wrap:wrap;justify-content:space-between">
+        <div style="display:flex;gap:6px;flex-wrap:wrap">
+          <button class="btn-sm" onclick="rollAllInitiatives()" style="font-size:0.68rem;background:rgba(200,168,75,0.1);border-color:var(--gold);color:var(--gold)">🎲 Tirar todas las iniciativas</button>
+          <button class="btn-sm" onclick="togglePlayerInitiatives()" style="font-size:0.68rem;background:rgba(92,184,92,0.1);border-color:#5cb85c;color:#5cb85c">👥 Jugadores</button>
+        </div>
+        <div style="display:flex;gap:6px">
+          <button class="btn-sm" onclick="sortByInitiative()" style="font-size:0.68rem">↕ Ordenar</button>
+          <button class="btn-sm" onclick="clearEncounter()" style="font-size:0.68rem;border-color:#e74c3c;color:#e74c3c">✕ Limpiar</button>
+        </div>
       </div>
     </div>
 
@@ -2650,6 +2909,163 @@ input[type="number"] { text-align: center; }
           <tr><td>6</td><td>2.300</td><td>20</td><td>25.000</td></tr>
         </table>
       </div>
+    </div>
+
+    <!-- LOOT GENERATOR -->
+    <div class="card" style="margin-bottom:10px">
+      <div class="dm-ref-title" onclick="toggleDMRef('ref_loot')">💰 Generador de Tesoro <span style="float:right">▾</span></div>
+      <div id="ref_loot" class="dm-ref-body" style="display:none">
+        <div style="font-size:0.78rem;color:var(--text3);margin-bottom:10px">Genera tesoro apropiado según el ND del encuentro completado.</div>
+        <div style="display:flex;gap:8px;margin-bottom:10px;flex-wrap:wrap;align-items:flex-end">
+          <div>
+            <label style="font-size:0.72rem">ND del encuentro</label>
+            <select id="loot_nd_select" style="font-size:0.82rem">
+              <option value="0">ND 0-4</option>
+              <option value="5">ND 5-10</option>
+              <option value="11">ND 11-16</option>
+              <option value="17">ND 17+</option>
+            </select>
+          </div>
+          <div>
+            <label style="font-size:0.72rem">Tipo de tesoro</label>
+            <select id="loot_type_select" style="font-size:0.82rem">
+              <option value="individual">Individual (1 criatura)</option>
+              <option value="hoard">Acumulado (guarida)</option>
+            </select>
+          </div>
+          <button class="btn-roll" onclick="generateLoot()">🎲 Generar</button>
+        </div>
+        <div id="loot_result" style="display:none;background:var(--bg3);border-radius:var(--radius);padding:12px">
+          <div style="font-size:0.72rem;color:var(--gold2);letter-spacing:1px;font-family:var(--font-title);margin-bottom:8px">💰 TESORO GENERADO</div>
+          <div id="loot_coins" style="margin-bottom:8px;font-size:0.85rem"></div>
+          <div id="loot_items" style="font-size:0.82rem;color:var(--text2)"></div>
+          <div style="display:flex;gap:8px;margin-top:10px">
+            <button class="btn-sm" onclick="addLootToJournal()" style="font-size:0.72rem;background:rgba(200,168,75,0.1);border-color:var(--gold);color:var(--gold)">📖 Añadir al diario</button>
+            <button class="btn-sm" onclick="addLootToInventory()" style="font-size:0.72rem">🎒 Añadir al inventario</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- GLOBAL SEARCH MODAL -->
+<div id="global_search_modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.8);z-index:1500;padding:20px;overflow-y:auto" onclick="closeGlobalSearch(event)">
+  <div style="max-width:560px;margin:0 auto;background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:16px" onclick="event.stopPropagation()">
+    <div style="display:flex;gap:8px;margin-bottom:12px;align-items:center">
+      <input type="text" id="global_search_input" placeholder="🔍 Buscar hechizos, monstruos, objetos mágicos..."
+        style="flex:1;font-size:0.9rem;padding:10px 14px;border-radius:20px"
+        oninput="runGlobalSearch()" autofocus>
+      <button onclick="closeGlobalSearch()" style="background:none;border:none;color:var(--text3);font-size:1.2rem;cursor:pointer">✕</button>
+    </div>
+    <!-- Filter tabs -->
+    <div style="display:flex;gap:6px;margin-bottom:10px;flex-wrap:wrap">
+      <button class="btn-sm gs-filter active" data-gf="all"      onclick="setGlobalFilter('all')"      style="font-size:0.72rem">Todo</button>
+      <button class="btn-sm gs-filter"        data-gf="spells"   onclick="setGlobalFilter('spells')"   style="font-size:0.72rem">✨ Hechizos</button>
+      <button class="btn-sm gs-filter"        data-gf="monsters" onclick="setGlobalFilter('monsters')" style="font-size:0.72rem">🐉 Monstruos</button>
+      <button class="btn-sm gs-filter"        data-gf="items"    onclick="setGlobalFilter('items')"    style="font-size:0.72rem">💎 Objetos</button>
+    </div>
+    <div id="global_search_results" style="max-height:420px;overflow-y:auto">
+      <p style="color:var(--text3);text-align:center;padding:20px;font-size:0.85rem">Escribe para buscar en hechizos, monstruos y objetos mágicos</p>
+    </div>
+  </div>
+</div>
+
+<!-- TUTORIAL MODAL -->
+<div id="tutorial_modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:2000;overflow-y:auto;padding:20px">
+  <div style="max-width:520px;margin:0 auto;padding:24px 20px">
+
+    <!-- Header -->
+    <div style="text-align:center;margin-bottom:24px">
+      <div style="font-family:var(--font-title);font-size:2rem;color:var(--gold);letter-spacing:3px;text-shadow:0 0 20px rgba(200,168,75,0.5)">⚔ D&D 5e</div>
+      <div style="font-family:var(--font-title);font-size:1rem;color:var(--gold2);letter-spacing:2px;margin-top:4px">HOJA DE PERSONAJE INTERACTIVA</div>
+      <div style="font-size:0.85rem;color:var(--text3);margin-top:8px">Bienvenido. Aquí tienes una guía rápida para empezar.</div>
+    </div>
+
+    <!-- Steps -->
+    <div id="tutorial_steps">
+
+      <!-- Step 1 -->
+      <div class="tutorial-step active" id="tut_step_1">
+        <div class="tutorial-step-icon">🧙</div>
+        <div class="tutorial-step-title">1. Crea tu personaje</div>
+        <div class="tutorial-step-body">
+          <p>Ve a la pestaña <strong>⚔ Personaje</strong> y rellena el nombre, clase, nivel y atributos.</p>
+          <p>Los valores calculados (CA, iniciativa, modificadores) se actualizan automáticamente.</p>
+          <div class="tutorial-tip">💡 Toca el campo <strong>Raza</strong> o <strong>Trasfondo</strong> para ir directamente a la pestaña de Origen, donde puedes elegirlos con todos sus bonos.</div>
+        </div>
+      </div>
+
+      <!-- Step 2 -->
+      <div class="tutorial-step" id="tut_step_2">
+        <div class="tutorial-step-icon">🧬</div>
+        <div class="tutorial-step-title">2. Elige raza y trasfondo</div>
+        <div class="tutorial-step-body">
+          <p>En la pestaña <strong>🧬 Origen</strong> puedes elegir tu raza, trasfondo, subclase y dotes del SRD.</p>
+          <p>Al aplicarlos se suman automáticamente los bonos a tus atributos y se añaden rasgos en tus notas.</p>
+          <div class="tutorial-tip">💡 También puedes usar el <strong>Generador de personaje</strong> desde la pantalla de personajes para crear uno completo en 4 pasos.</div>
+        </div>
+      </div>
+
+      <!-- Step 3 -->
+      <div class="tutorial-step" id="tut_step_3">
+        <div class="tutorial-step-icon">⚔</div>
+        <div class="tutorial-step-title">3. Prepárate para el combate</div>
+        <div class="tutorial-step-body">
+          <p>En la pestaña <strong>⚔ Combate</strong> encontrarás:</p>
+          <ul style="margin:8px 0 8px 16px;line-height:1.8;font-size:0.85rem;color:var(--text2)">
+            <li>HP, CA, iniciativa y velocidad calculados</li>
+            <li>Recursos de clase (rabia, ki, espacios de brujo…)</li>
+            <li>Ataques sin armas según tu clase</li>
+            <li>Condiciones activas con efectos mecánicos</li>
+            <li>Botones de descanso corto y largo</li>
+          </ul>
+          <div class="tutorial-tip">💡 Ve a <strong>🎒 Inventario</strong> y toca <em>Aplicar equipo de clase</em> para añadir el equipo inicial de tu clase automáticamente.</div>
+        </div>
+      </div>
+
+      <!-- Step 4 -->
+      <div class="tutorial-step" id="tut_step_4">
+        <div class="tutorial-step-icon">✨</div>
+        <div class="tutorial-step-title">4. Hechizos e inventario</div>
+        <div class="tutorial-step-body">
+          <p>En <strong>✨ Magia</strong> puedes buscar hechizos del SRD, filtrar por clase y nivel, y añadirlos a tu lista personal.</p>
+          <p>En <strong>🎒 Inventario</strong> lleva el control de tus objetos, peso y monedas. También puedes buscar objetos mágicos del SRD.</p>
+          <div class="tutorial-tip">💡 En <strong>🎲 Dados</strong> tienes dados rápidos, tiradas de habilidad y un historial de las últimas 20 tiradas que persiste entre sesiones.</div>
+        </div>
+      </div>
+
+      <!-- Step 5 -->
+      <div class="tutorial-step" id="tut_step_5">
+        <div class="tutorial-step-icon">💾</div>
+        <div class="tutorial-step-title">5. Guarda y comparte</div>
+        <div class="tutorial-step-body">
+          <p>Tu personaje se guarda automáticamente en este navegador. Puedes tener varios personajes tocando <strong>👥 Personajes</strong>.</p>
+          <p>Usa <strong>💾 JSON</strong> para exportar tu personaje como archivo y compartirlo, o <strong>🖨 PDF</strong> para imprimir tu hoja.</p>
+          <div class="tutorial-tip">💡 Si eres DM, toca la pestaña <strong>🎭 DM</strong> (versión DM) para acceder al tracker de encuentro, buscador de monstruos, calculadora de XP y pantalla de referencia.</div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Navigation -->
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-top:24px">
+      <button class="btn-sm" id="tut_prev" onclick="tutorialNav(-1)" style="visibility:hidden;min-width:80px">← Anterior</button>
+      <div id="tut_dots" style="display:flex;gap:8px">
+        <div class="tut-dot active" onclick="tutorialGo(1)"></div>
+        <div class="tut-dot" onclick="tutorialGo(2)"></div>
+        <div class="tut-dot" onclick="tutorialGo(3)"></div>
+        <div class="tut-dot" onclick="tutorialGo(4)"></div>
+        <div class="tut-dot" onclick="tutorialGo(5)"></div>
+      </div>
+      <button class="btn-sm" id="tut_next" onclick="tutorialNav(1)" style="min-width:80px;background:rgba(200,168,75,0.15);border-color:var(--gold);color:var(--gold)">Siguiente →</button>
+    </div>
+
+    <div style="text-align:center;margin-top:16px">
+      <button onclick="closeTutorial()" style="background:none;border:none;color:var(--text3);font-size:0.8rem;cursor:pointer;text-decoration:underline">
+        Saltar tutorial
+      </button>
     </div>
 
   </div>
@@ -3430,6 +3846,436 @@ function applyLevelFeatures() {
 }
 
 // ============================================================
+// TUTORIAL
+// ============================================================
+var tutorialStep = 1;
+var TUTORIAL_TOTAL = 5;
+
+function showTutorial() {
+  tutorialStep = 1;
+  tutorialRender();
+  document.getElementById('tutorial_modal').style.display = 'block';
+}
+
+function closeTutorial() {
+  document.getElementById('tutorial_modal').style.display = 'none';
+  try { localStorage.setItem('dnd5e_tutorial_done', '1'); } catch(e) {}
+}
+
+function tutorialNav(dir) {
+  tutorialStep = Math.max(1, Math.min(TUTORIAL_TOTAL, tutorialStep + dir));
+  tutorialRender();
+  if (tutorialStep === TUTORIAL_TOTAL && dir === 1) {
+    // Last step next = finish
+    var btn = document.getElementById('tut_next');
+    if (btn) { btn.textContent = '¡Empezar! 🎲'; btn.onclick = closeTutorial; }
+    return;
+  }
+  tutorialRender();
+}
+
+function tutorialGo(step) {
+  tutorialStep = step;
+  tutorialRender();
+}
+
+function tutorialRender() {
+  // Show/hide steps
+  for (var i = 1; i <= TUTORIAL_TOTAL; i++) {
+    var el = document.getElementById('tut_step_' + i);
+    if (el) el.className = 'tutorial-step' + (i === tutorialStep ? ' active' : '');
+  }
+  // Update dots
+  var dots = document.querySelectorAll('.tut-dot');
+  dots.forEach(function(d, i) {
+    d.className = 'tut-dot' + (i + 1 === tutorialStep ? ' active' : '');
+  });
+  // Prev button
+  var prev = document.getElementById('tut_prev');
+  if (prev) prev.style.visibility = tutorialStep > 1 ? 'visible' : 'hidden';
+  // Next button
+  var next = document.getElementById('tut_next');
+  if (next) {
+    if (tutorialStep === TUTORIAL_TOTAL) {
+      next.textContent = '¡Empezar! 🎲';
+      next.onclick = closeTutorial;
+    } else {
+      next.textContent = 'Siguiente →';
+      next.onclick = function(){ tutorialNav(1); };
+    }
+  }
+}
+
+// ============================================================
+// EQUIPO INICIAL POR CLASE
+// ============================================================
+var STARTING_EQUIPMENT = {
+  Barbarian: [
+    { name:'Hacha de guerra', qty:1, weight:4, value:15 },
+    { name:'Hacha de mano', qty:2, weight:2, value:5 },
+    { name:'Paquete de explorador', qty:1, weight:10, value:10 },
+    { name:'Jabalina', qty:4, weight:2, value:0.5 }
+  ],
+  Bard: [
+    { name:'Espada larga', qty:1, weight:3, value:15 },
+    { name:'Daga', qty:1, weight:1, value:2 },
+    { name:'Instrumento musical (laúd)', qty:1, weight:2, value:35 },
+    { name:'Paquete de diplomático', qty:1, weight:36, value:39 },
+    { name:'Armadura de cuero', qty:1, weight:10, value:10 }
+  ],
+  Cleric: [
+    { name:'Maza', qty:1, weight:4, value:5 },
+    { name:'Armadura de escamas', qty:1, weight:45, value:50 },
+    { name:'Escudo', qty:1, weight:6, value:10 },
+    { name:'Símbolo sagrado', qty:1, weight:1, value:5 },
+    { name:'Paquete de sacerdote', qty:1, weight:24, value:19 }
+  ],
+  Druid: [
+    { name:'Escudo de madera', qty:1, weight:6, value:10 },
+    { name:'Cimitarra', qty:1, weight:3, value:25 },
+    { name:'Armadura de cuero', qty:1, weight:10, value:10 },
+    { name:'Foco druídico (bastón de madera)', qty:1, weight:4, value:5 },
+    { name:'Paquete de explorador', qty:1, weight:10, value:10 },
+    { name:'Bolsa de componentes', qty:1, weight:1, value:25 }
+  ],
+  Fighter: [
+    { name:'Cota de malla', qty:1, weight:55, value:75 },
+    { name:'Escudo', qty:1, weight:6, value:10 },
+    { name:'Espada larga', qty:1, weight:3, value:15 },
+    { name:'Espada corta', qty:1, weight:2, value:10 },
+    { name:'Arco largo', qty:1, weight:2, value:50 },
+    { name:'Flechas', qty:20, weight:1, value:1 },
+    { name:'Paquete de mazmorreo', qty:1, weight:61, value:12 }
+  ],
+  Monk: [
+    { name:'Dardo', qty:10, weight:0.25, value:0.5 },
+    { name:'Báculo corto', qty:1, weight:4, value:2 },
+    { name:'Paquete de mazmorreo', qty:1, weight:61, value:12 }
+  ],
+  Paladin: [
+    { name:'Cota de malla', qty:1, weight:55, value:75 },
+    { name:'Escudo', qty:1, weight:6, value:10 },
+    { name:'Espada larga', qty:1, weight:3, value:15 },
+    { name:'Jabalina', qty:5, weight:2, value:0.5 },
+    { name:'Símbolo sagrado', qty:1, weight:1, value:5 },
+    { name:'Paquete de sacerdote', qty:1, weight:24, value:19 }
+  ],
+  Ranger: [
+    { name:'Armadura de escamas', qty:1, weight:45, value:50 },
+    { name:'Espada corta', qty:2, weight:2, value:10 },
+    { name:'Arco largo', qty:1, weight:2, value:50 },
+    { name:'Flechas', qty:20, weight:1, value:1 },
+    { name:'Paquete de explorador', qty:1, weight:10, value:10 }
+  ],
+  Rogue: [
+    { name:'Espada corta', qty:2, weight:2, value:10 },
+    { name:'Arco corto', qty:1, weight:2, value:25 },
+    { name:'Flechas', qty:20, weight:1, value:1 },
+    { name:'Armadura de cuero', qty:1, weight:10, value:10 },
+    { name:'Daga', qty:2, weight:1, value:2 },
+    { name:'Herramientas de ladrón', qty:1, weight:1, value:25 },
+    { name:'Paquete de mazmorreo', qty:1, weight:61, value:12 }
+  ],
+  Sorcerer: [
+    { name:'Daga', qty:2, weight:1, value:2 },
+    { name:'Báculo arcano', qty:1, weight:4, value:5 },
+    { name:'Paquete de explorador', qty:1, weight:10, value:10 },
+    { name:'Bolsa de componentes', qty:1, weight:1, value:25 }
+  ],
+  Warlock: [
+    { name:'Ballesta ligera', qty:1, weight:5, value:25 },
+    { name:'Virotes', qty:20, weight:1.5, value:1 },
+    { name:'Bolsa de componentes', qty:1, weight:1, value:25 },
+    { name:'Paquete de mazmorreo', qty:1, weight:61, value:12 },
+    { name:'Armadura de cuero', qty:1, weight:10, value:10 },
+    { name:'Daga', qty:2, weight:1, value:2 },
+    { name:'Foco arcano (orbe)', qty:1, weight:3, value:20 }
+  ],
+  Wizard: [
+    { name:'Báculo de cuarzo', qty:1, weight:4, value:5 },
+    { name:'Bolsa de componentes', qty:1, weight:1, value:25 },
+    { name:'Libro de hechizos', qty:1, weight:3, value:50 },
+    { name:'Daga', qty:1, weight:1, value:2 },
+    { name:'Paquete de explorador', qty:1, weight:10, value:10 }
+  ]
+};
+
+function applyStartingEquipment() {
+  var cls = document.getElementById('char_class').value;
+  var items = STARTING_EQUIPMENT[cls];
+  if (!items) {
+    showToast('Sin equipo definido para ' + cls);
+    return;
+  }
+  if (!char.inventory) char.inventory = [];
+
+  var added = 0;
+  items.forEach(function(item) {
+    // Check if already exists
+    var exists = char.inventory.some(function(i) {
+      return i.name.toLowerCase() === item.name.toLowerCase();
+    });
+    if (!exists) {
+      char.inventory.push({
+        name: item.name,
+        qty: item.qty || 1,
+        weight: item.weight || 0,
+        value: item.value || 0
+      });
+      added++;
+    }
+  });
+
+  renderInventory();
+  saveCharacter();
+  if (added > 0) {
+    showToast('✚ ' + added + ' objetos añadidos al inventario');
+  } else {
+    showToast('Ya tienes todo el equipo inicial');
+  }
+}
+
+// ============================================================
+// RECURSOS DE CLASE
+// ============================================================
+
+function getClassResources(cls, level, ab) {
+  var prof = getProfBonus(level);
+  var resources = [];
+
+  if (cls === 'Barbarian') {
+    var rageUses = level >= 20 ? 99 : level >= 17 ? 6 : level >= 12 ? 5 : level >= 6 ? 4 : level >= 3 ? 3 : 2;
+    var rageDmg  = level >= 16 ? 4 : level >= 9 ? 3 : 2;
+    resources.push({ id:'rage', label:'Rabia', icon:'😤', max: rageUses === 99 ? 10 : rageUses,
+      note: rageUses === 99 ? '∞' : null,
+      desc: '+' + rageDmg + ' daño, resist. contundente/perforante/cortante', recovery:'Descanso largo' });
+  }
+
+  if (cls === 'Bard') {
+    var biDie = level >= 15 ? 'd12' : level >= 10 ? 'd10' : level >= 5 ? 'd8' : 'd6';
+    var biUses = Math.max(1, getMod(ab.cha));
+    var biRecovery = level >= 5 ? 'Descanso corto' : 'Descanso largo';
+    resources.push({ id:'bard_insp', label:'Inspiración bárdica', icon:'🎵', max: biUses,
+      desc: biDie + ' de inspiración', recovery: biRecovery });
+  }
+
+  if (cls === 'Cleric') {
+    var cdUses = level >= 18 ? 3 : level >= 6 ? 2 : 1;
+    resources.push({ id:'channel_div', label:'Conjurar divinidad', icon:'✝', max: cdUses,
+      desc: 'Vuelta o destruir no-muertos, rasgo de dominio', recovery:'Descanso corto' });
+  }
+
+  if (cls === 'Druid') {
+    var wsUses = level >= 20 ? 10 : 2;
+    var wsND   = level >= 8 ? '1 (volar)' : level >= 4 ? '1/2 (nadar)' : '1/4';
+    resources.push({ id:'wild_shape', label:'Forma salvaje', icon:'🐺', max: wsUses,
+      desc: 'ND máx ' + wsND, recovery:'Descanso corto' });
+  }
+
+  if (cls === 'Fighter') {
+    resources.push({ id:'second_wind', label:'2º Aliento', icon:'💨', max: 1,
+      desc: '1d10+' + level + ' PG recuperados', recovery:'Descanso corto' });
+    var actionSurgeUses = level >= 17 ? 2 : 1;
+    resources.push({ id:'action_surge', label:'Oleada de acción', icon:'⚡', max: actionSurgeUses,
+      desc: 'Una acción adicional este turno', recovery:'Descanso corto' });
+    if (level >= 9) {
+      var indomUses = level >= 17 ? 3 : level >= 13 ? 2 : 1;
+      resources.push({ id:'indomitable', label:'Indomable', icon:'🛡', max: indomUses,
+        desc: 'Repite una TS fallida', recovery:'Descanso largo' });
+    }
+  }
+
+  if (cls === 'Monk') {
+    resources.push({ id:'ki', label:'Puntos de Ki', icon:'🔮', max: level,
+      desc: 'Flurry of Blows (2), Patient Defense (1), Step of Wind (1)', recovery:'Descanso corto' });
+  }
+
+  if (cls === 'Paladin') {
+    var impHands = level * 5;
+    resources.push({ id:'imp_hands', label:'Imponer las manos', icon:'🙏', max: impHands,
+      isPool: true, desc: 'Cura PG o neutraliza enfermedad/veneno', recovery:'Descanso largo' });
+    resources.push({ id:'sense_div', label:'Sentido divino', icon:'✨', max: Math.max(1, 1 + getMod(ab.cha)),
+      desc: 'Detectar celestiales, infernales y no-muertos a 60 ft.', recovery:'Descanso largo' });
+    var cdPaladUses = level >= 18 ? 3 : level >= 6 ? 2 : 1;
+    if (level >= 3) {
+      resources.push({ id:'channel_pal', label:'Conjurar divinidad', icon:'✝', max: cdPaladUses,
+        desc: 'Rasgo de juramento sagrado', recovery:'Descanso corto' });
+    }
+  }
+
+  if (cls === 'Ranger') {
+    if (level >= 3) {
+      resources.push({ id:'prim_aware', label:'Conciencia primitiva', icon:'🌿', max: 1,
+        desc: 'Detectar criaturas por tipo en 1 milla', recovery:'Descanso largo' });
+    }
+  }
+
+  if (cls === 'Rogue') {
+    if (level >= 5) {
+      resources.push({ id:'uncanny_dodge', label:'Golpe inesperado', icon:'🎯', max: 1,
+        desc: 'Usa el ataque aunque hayas fallado', recovery:'Descanso largo' });
+    }
+  }
+
+  if (cls === 'Sorcerer') {
+    var spellPoints = level;
+    resources.push({ id:'sorc_points', label:'Puntos de hechicería', icon:'🌀', max: spellPoints,
+      isPool: true, desc: 'Convierte en espacios de hechizo o úsalos para metamagia', recovery:'Descanso largo' });
+  }
+
+  if (cls === 'Warlock') {
+    var warlockSlotLevel = level >= 9 ? 5 : level >= 7 ? 4 : level >= 5 ? 3 : level >= 3 ? 2 : 1;
+    var warlockSlots = level >= 11 ? 3 : level >= 2 ? 2 : 1;
+    resources.push({ id:'warlock_slots', label:'Espacios de Brujo (nv.' + warlockSlotLevel + ')', icon:'🔱', max: warlockSlots,
+      desc: 'Todos al mismo nivel, recuperados en descanso corto', recovery:'Descanso corto' });
+    if (level >= 11) {
+      var mysticUses = 1;
+      resources.push({ id:'mystic_arcanum', label:'Magia mística', icon:'📜', max: mysticUses,
+        desc: 'Hechizo de nivel ' + (level >= 17 ? '9' : level >= 15 ? '8' : level >= 13 ? '7' : '6') + ' sin gastar espacio', recovery:'Descanso largo' });
+    }
+  }
+
+  if (cls === 'Wizard') {
+    var arcRecovSlots = Math.max(1, Math.floor(level / 2));
+    resources.push({ id:'arc_recovery', label:'Recuperación arcana', icon:'📖', max: 1,
+      desc: 'Recupera hasta ' + arcRecovSlots + ' niveles de espacios (1/día)', recovery:'Descanso corto' });
+  }
+
+  return resources;
+}
+
+function renderClassResources() {
+  var panel   = document.getElementById('class_resources_panel');
+  var content = document.getElementById('class_resources_content');
+  if (!panel || !content) return;
+
+  var cls   = document.getElementById('char_class').value;
+  var level = parseInt(document.getElementById('char_level').value) || 1;
+  var ab    = getAbilities();
+
+  var resources = getClassResources(cls, level, ab);
+
+  if (!resources.length) {
+    panel.style.display = 'none';
+    return;
+  }
+  panel.style.display = 'block';
+
+  // Init resource state if needed
+  if (!char.resources) char.resources = {};
+
+  content.innerHTML = resources.map(function(r) {
+    var used = char.resources[r.id] || 0;
+    var max  = r.max;
+    var remaining = Math.max(0, max - used);
+
+    if (r.isPool) {
+      // Pool type (points, hands)
+      return '<div style="margin-bottom:10px">'
+        + '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">'
+        + '<span style="font-weight:600;font-size:0.85rem">' + r.icon + ' ' + r.label + '</span>'
+        + '<span style="font-family:var(--font-title);font-size:0.9rem;color:var(--gold2)">' + remaining + ' / ' + max + '</span>'
+        + '</div>'
+        + '<div style="display:flex;gap:6px;align-items:center">'
+        + '<button class="btn-sm" onclick="spendResource(\'' + r.id + '\',' + max + ',1)">- Gastar</button>'
+        + '<div style="flex:1;height:8px;background:var(--bg4);border-radius:4px;overflow:hidden">'
+        + '<div style="height:100%;width:' + Math.round(remaining/max*100) + '%;background:var(--gold);border-radius:4px;transition:width 0.2s"></div>'
+        + '</div>'
+        + '<button class="btn-sm" onclick="recoverResource(\'' + r.id + '\',' + max + ',1)">+ Recuperar</button>'
+        + '</div>'
+        + '<div style="font-size:0.7rem;color:var(--text3);margin-top:3px">' + r.desc + ' · ♻ ' + r.recovery + '</div>'
+        + '</div>';
+    }
+
+    // Pip type (usos contables)
+    var note = r.note;
+    var pips = note ? '<span style="font-family:var(--font-title);font-size:1.1rem;color:var(--gold2)">∞</span>' :
+      Array.from({length: max}, function(_, i) {
+        var isUsed = i < used;
+        return '<div onclick="toggleResourcePip(\'' + r.id + '\',' + i + ',' + max + ')" '
+          + 'style="width:22px;height:22px;border-radius:50%;border:2px solid ' + (isUsed ? 'var(--border2)' : 'var(--gold)') + ';'
+          + 'background:' + (isUsed ? 'var(--bg4)' : 'rgba(200,168,75,0.25)') + ';'
+          + 'cursor:pointer;transition:all 0.15s;display:flex;align-items:center;justify-content:center;font-size:0.6rem">'
+          + (isUsed ? '' : '●') + '</div>';
+      }).join('');
+
+    return '<div style="margin-bottom:10px">'
+      + '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">'
+      + '<span style="font-weight:600;font-size:0.85rem">' + r.icon + ' ' + r.label + '</span>'
+      + '<button class="btn-sm" onclick="recoverAllResource(\'' + r.id + '\')" style="font-size:0.65rem">↺ Recuperar</button>'
+      + '</div>'
+      + '<div style="display:flex;gap:5px;flex-wrap:wrap">' + pips + '</div>'
+      + '<div style="font-size:0.7rem;color:var(--text3);margin-top:4px">' + r.desc + ' · ♻ ' + r.recovery + '</div>'
+      + '</div>';
+  }).join('<div style="border-top:1px solid var(--border2);margin:8px 0"></div>');
+}
+
+function toggleResourcePip(id, idx, max) {
+  if (!char.resources) char.resources = {};
+  var used = char.resources[id] || 0;
+  // Click on used pip = recover, click on unused = spend
+  if (idx < used) {
+    char.resources[id] = idx; // recover back to this pip
+  } else {
+    char.resources[id] = idx + 1; // spend up to this pip
+  }
+  renderClassResources();
+  saveCharacter();
+}
+
+function spendResource(id, max, amount) {
+  if (!char.resources) char.resources = {};
+  char.resources[id] = Math.min(max, (char.resources[id] || 0) + amount);
+  renderClassResources();
+  saveCharacter();
+}
+
+function recoverResource(id, max, amount) {
+  if (!char.resources) char.resources = {};
+  char.resources[id] = Math.max(0, (char.resources[id] || 0) - amount);
+  renderClassResources();
+  saveCharacter();
+}
+
+function recoverAllResource(id) {
+  if (!char.resources) char.resources = {};
+  char.resources[id] = 0;
+  renderClassResources();
+  saveCharacter();
+}
+
+function recoverShortRest() {
+  // Recover all short-rest resources
+  if (!char.resources) char.resources = {};
+  var cls   = document.getElementById('char_class').value;
+  var level = parseInt(document.getElementById('char_level').value) || 1;
+  var ab    = getAbilities();
+  var resources = getClassResources(cls, level, ab);
+  resources.forEach(function(r) {
+    if (r.recovery === 'Descanso corto') char.resources[r.id] = 0;
+  });
+  renderClassResources();
+  saveCharacter();
+  showToast('♻ Descanso corto: recursos recuperados');
+}
+
+function recoverLongRest() {
+  // Recover all resources
+  if (!char.resources) char.resources = {};
+  var cls   = document.getElementById('char_class').value;
+  var level = parseInt(document.getElementById('char_level').value) || 1;
+  var ab    = getAbilities();
+  var resources = getClassResources(cls, level, ab);
+  resources.forEach(function(r) { char.resources[r.id] = 0; });
+  // Also reset spell slots
+  char.spell_slots_used = {};
+  renderClassResources();
+  updateSpellSlotsDisplay(cls, level);
+  saveCharacter();
+  showToast('🌙 Descanso largo: todos los recursos recuperados');
+}
+
+// ============================================================
 // 4d6 ROLLER
 // ============================================================
 var rolledStats = [];
@@ -3562,28 +4408,49 @@ function addMagicItemToInventory() {
 // ============================================================
 // SESSIONS
 // ============================================================
+// ============================================================
+// DIARIO DE CAMPAÑA
+// ============================================================
+
+function switchJournalTab(id) {
+  document.querySelectorAll('.journal-tab-panel').forEach(function(p){ p.style.display = 'none'; });
+  document.querySelectorAll('.journal-tab-btn').forEach(function(b){ b.classList.remove('active'); });
+  var panel = document.getElementById(id);
+  if (panel) panel.style.display = 'block';
+  var btn = document.querySelector('[data-jtab="' + id + '"]');
+  if (btn) btn.classList.add('active');
+}
+
+// ── SESIONES ─────────────────────────────────────────────────
 function addSession() {
-  var num   = parseInt(document.getElementById('session_number').value) || 1;
-  var date  = document.getElementById('session_date').value.trim();
-  var title = document.getElementById('session_title').value.trim();
-  var notes = document.getElementById('session_notes').value.trim();
-  var xp    = parseInt(document.getElementById('session_xp').value) || 0;
+  var num        = parseInt(document.getElementById('session_number').value) || 1;
+  var date       = document.getElementById('session_date').value.trim();
+  var title      = document.getElementById('session_title').value.trim();
+  var notes      = document.getElementById('session_notes').value.trim();
+  var highlights = document.getElementById('session_highlights').value.trim();
+  var xp         = parseInt(document.getElementById('session_xp').value) || 0;
+  var gold       = parseInt(document.getElementById('session_gold').value) || 0;
 
   if (!title && !notes) { showToast('Escribe al menos un título o notas'); return; }
-
   if (!char.sessions) char.sessions = [];
-  char.sessions.unshift({ num: num, date: date, title: title || 'Sin título', notes: notes, xp: xp, timestamp: Date.now() });
 
-  // Clear form, increment session number
+  char.sessions.unshift({
+    num: num, date: date, title: title || 'Sin título',
+    notes: notes, highlights: highlights, xp: xp, gold: gold,
+    timestamp: Date.now()
+  });
+
   document.getElementById('session_number').value = num + 1;
   document.getElementById('session_date').value = '';
   document.getElementById('session_title').value = '';
   document.getElementById('session_notes').value = '';
+  document.getElementById('session_highlights').value = '';
   document.getElementById('session_xp').value = '0';
+  document.getElementById('session_gold').value = '0';
 
-  renderSessions();
+  renderJournal();
   saveCharacter();
-  showToast('Sesión guardada');
+  showToast('✅ Sesión ' + num + ' guardada');
 }
 
 function renderSessions() {
@@ -3591,36 +4458,245 @@ function renderSessions() {
   var totalEl   = document.getElementById('session_xp_total');
   if (!container) return;
   if (!char.sessions || !char.sessions.length) {
-    container.innerHTML = '<p class="empty-msg">No hay sesiones registradas todavía</p>';
+    container.innerHTML = '<p class="empty-msg">No hay sesiones registradas</p>';
     if (totalEl) totalEl.textContent = '';
     return;
   }
 
-  var totalXP = char.sessions.reduce(function(sum, s){ return sum + (s.xp || 0); }, 0);
+  var totalXP  = char.sessions.reduce(function(s,e){ return s+(e.xp||0); }, 0);
+  var totalGold= char.sessions.reduce(function(s,e){ return s+(e.gold||0); }, 0);
 
   container.innerHTML = char.sessions.map(function(s, i) {
-    return '<div class="card" style="margin-bottom:10px">'
-      + '<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6px">'
+    return '<div class="journal-entry-card">'
+      + '<div class="journal-entry-header">'
       + '<div>'
-      + '<span style="font-family:var(--font-title);color:var(--gold);font-size:0.9rem">Sesión ' + s.num + ': ' + s.title + '</span>'
-      + (s.date ? '<span style="color:var(--text3);font-size:0.78rem;margin-left:10px">' + s.date + '</span>' : '')
+      + '<span class="journal-entry-title">Sesión ' + s.num + ': ' + s.title + '</span>'
+      + (s.date ? '<span class="journal-entry-meta" style="margin-left:8px">📅 ' + s.date + '</span>' : '')
       + '</div>'
-      + '<div style="display:flex;gap:6px;align-items:center">'
-      + (s.xp ? '<span style="font-size:0.75rem;color:var(--gold2);font-family:var(--font-title)">+' + s.xp + ' XP</span>' : '')
+      + '<div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap">'
+      + (s.xp  ? '<span style="font-size:0.72rem;color:var(--gold2)">+' + s.xp + ' XP</span>' : '')
+      + (s.gold? '<span style="font-size:0.72rem;color:#f0ad4e">+' + s.gold + ' po</span>' : '')
       + '<button class="btn-remove" onclick="removeSession(' + i + ')">✕</button>'
       + '</div></div>'
-      + (s.notes ? '<p style="color:var(--text2);font-size:0.88rem;line-height:1.5;white-space:pre-wrap">' + s.notes + '</p>' : '')
+      + (s.notes ? '<div class="journal-entry-body" style="margin-top:6px">' + s.notes + '</div>' : '')
+      + (s.highlights ? '<div style="margin-top:6px;padding:6px 8px;background:rgba(200,168,75,0.06);border-radius:4px;font-size:0.78rem;color:var(--gold2)">⭐ ' + s.highlights + '</div>' : '')
       + '</div>';
   }).join('');
 
-  if (totalEl) totalEl.textContent = totalXP > 0 ? 'XP Total acumulada: ' + totalXP : '';
+  if (totalEl) {
+    var parts = [];
+    if (totalXP > 0)   parts.push('XP total: ' + totalXP.toLocaleString());
+    if (totalGold > 0) parts.push('Oro total: ' + totalGold.toLocaleString() + ' po');
+    totalEl.textContent = parts.join(' · ');
+  }
 }
 
 function removeSession(i) {
   if (!char.sessions) return;
   char.sessions.splice(i, 1);
-  renderSessions();
+  renderJournal();
   saveCharacter();
+}
+
+// ── PNJs ─────────────────────────────────────────────────────
+function addJournalNPC() {
+  var name     = document.getElementById('npc_j_name').value.trim();
+  var attitude = document.getElementById('npc_j_attitude').value;
+  var role     = document.getElementById('npc_j_role').value.trim();
+  var notes    = document.getElementById('npc_j_notes').value.trim();
+  if (!name) { showToast('Escribe el nombre del PNJ'); return; }
+  if (!char.journal_npcs) char.journal_npcs = [];
+  char.journal_npcs.unshift({ name: name, attitude: attitude, role: role, notes: notes, id: Date.now() });
+  document.getElementById('npc_j_name').value = '';
+  document.getElementById('npc_j_role').value = '';
+  document.getElementById('npc_j_notes').value = '';
+  renderJournalNPCs();
+  saveCharacter();
+  showToast('👥 PNJ añadido');
+}
+
+function renderJournalNPCs() {
+  var container = document.getElementById('journal_npcs_list');
+  if (!container) return;
+  if (!char.journal_npcs || !char.journal_npcs.length) {
+    container.innerHTML = '<p class="empty-msg">Ningún PNJ registrado</p>';
+    return;
+  }
+  var attitudeLabels = { aliado:'😊 Aliado', neutral:'😐 Neutral', hostil:'😠 Hostil', desconocido:'❓ Desconocido' };
+  container.innerHTML = char.journal_npcs.map(function(n, i) {
+    return '<div class="journal-entry-card">'
+      + '<div class="journal-entry-header">'
+      + '<div>'
+      + '<span class="journal-entry-title">' + n.name + '</span>'
+      + '<span class="attitude-badge attitude-' + n.attitude + '">' + attitudeLabels[n.attitude] + '</span>'
+      + '</div>'
+      + '<button class="btn-remove" onclick="removeJournalEntry(\'journal_npcs\',' + i + ')">✕</button>'
+      + '</div>'
+      + (n.role  ? '<div style="font-size:0.78rem;color:var(--gold2);margin-top:4px">' + n.role + '</div>' : '')
+      + (n.notes ? '<div class="journal-entry-body" style="margin-top:4px">' + n.notes + '</div>' : '')
+      + '</div>';
+  }).join('');
+}
+
+// ── LUGARES ──────────────────────────────────────────────────
+function addJournalPlace() {
+  var name  = document.getElementById('place_j_name').value.trim();
+  var type  = document.getElementById('place_j_type').value;
+  var notes = document.getElementById('place_j_notes').value.trim();
+  if (!name) { showToast('Escribe el nombre del lugar'); return; }
+  if (!char.journal_places) char.journal_places = [];
+  char.journal_places.unshift({ name: name, type: type, notes: notes, id: Date.now() });
+  document.getElementById('place_j_name').value = '';
+  document.getElementById('place_j_notes').value = '';
+  renderJournalPlaces();
+  saveCharacter();
+  showToast('🗺 Lugar añadido');
+}
+
+function renderJournalPlaces() {
+  var container = document.getElementById('journal_places_list');
+  if (!container) return;
+  if (!char.journal_places || !char.journal_places.length) {
+    container.innerHTML = '<p class="empty-msg">Ningún lugar registrado</p>';
+    return;
+  }
+  var typeIcons = { ciudad:'🏙', mazmorra:'🏚', taberna:'🍺', templo:'⛪', bosque:'🌲', otro:'📍' };
+  container.innerHTML = char.journal_places.map(function(p, i) {
+    return '<div class="journal-entry-card">'
+      + '<div class="journal-entry-header">'
+      + '<span class="journal-entry-title">' + (typeIcons[p.type]||'📍') + ' ' + p.name + '</span>'
+      + '<button class="btn-remove" onclick="removeJournalEntry(\'journal_places\',' + i + ')">✕</button>'
+      + '</div>'
+      + (p.notes ? '<div class="journal-entry-body" style="margin-top:4px">' + p.notes + '</div>' : '')
+      + '</div>';
+  }).join('');
+}
+
+// ── QUESTS ───────────────────────────────────────────────────
+var questFilter = 'todas';
+
+function addJournalQuest() {
+  var name   = document.getElementById('quest_j_name').value.trim();
+  var status = document.getElementById('quest_j_status').value;
+  var notes  = document.getElementById('quest_j_notes').value.trim();
+  if (!name) { showToast('Escribe el nombre de la quest'); return; }
+  if (!char.journal_quests) char.journal_quests = [];
+  char.journal_quests.unshift({ name: name, status: status, notes: notes, id: Date.now() });
+  document.getElementById('quest_j_name').value = '';
+  document.getElementById('quest_j_notes').value = '';
+  renderJournalQuests();
+  saveCharacter();
+  showToast('📜 Quest añadida');
+}
+
+function filterQuests(filter) {
+  questFilter = filter;
+  renderJournalQuests();
+}
+
+function updateQuestStatus(i, newStatus) {
+  if (!char.journal_quests || !char.journal_quests[i]) return;
+  char.journal_quests[i].status = newStatus;
+  renderJournalQuests();
+  saveCharacter();
+}
+
+function renderJournalQuests() {
+  var container = document.getElementById('journal_quests_list');
+  if (!container) return;
+  if (!char.journal_quests || !char.journal_quests.length) {
+    container.innerHTML = '<p class="empty-msg">Ninguna quest registrada</p>';
+    return;
+  }
+  var statusLabels = { activa:'🟡 Activa', completada:'✅ Completada', fallida:'❌ Fallida', secundaria:'🔵 Secundaria' };
+  var filtered = questFilter === 'todas' ? char.journal_quests
+    : char.journal_quests.filter(function(q){ return q.status === questFilter; });
+
+  if (!filtered.length) {
+    container.innerHTML = '<p class="empty-msg">Sin quests de este tipo</p>';
+    return;
+  }
+  container.innerHTML = filtered.map(function(q, fi) {
+    var realIdx = char.journal_quests.indexOf(q);
+    return '<div class="journal-entry-card quest-' + q.status + '">'
+      + '<div class="journal-entry-header">'
+      + '<span class="journal-entry-title">' + q.name + '</span>'
+      + '<div style="display:flex;gap:4px;align-items:center">'
+      + '<select onchange="updateQuestStatus(' + realIdx + ', this.value)" style="font-size:0.72rem;padding:2px 4px">'
+      + ['activa','completada','fallida','secundaria'].map(function(s){
+          return '<option value="' + s + '"' + (q.status===s?' selected':'') + '>' + statusLabels[s] + '</option>';
+        }).join('')
+      + '</select>'
+      + '<button class="btn-remove" onclick="removeJournalEntry(\'journal_quests\',' + realIdx + ')">✕</button>'
+      + '</div></div>'
+      + (q.notes ? '<div class="journal-entry-body" style="margin-top:4px">' + q.notes + '</div>' : '')
+      + '</div>';
+  }).join('');
+}
+
+// ── TESORO ───────────────────────────────────────────────────
+function addJournalLoot() {
+  var name    = document.getElementById('loot_j_name').value.trim();
+  var type    = document.getElementById('loot_j_type').value;
+  var value   = parseInt(document.getElementById('loot_j_value').value) || 0;
+  var session = document.getElementById('loot_j_session').value.trim();
+  if (!name) { showToast('Describe el tesoro'); return; }
+  if (!char.journal_loot) char.journal_loot = [];
+  char.journal_loot.unshift({ name: name, type: type, value: value, session: session, id: Date.now() });
+  document.getElementById('loot_j_name').value = '';
+  document.getElementById('loot_j_value').value = '0';
+  document.getElementById('loot_j_session').value = '';
+  renderJournalLoot();
+  saveCharacter();
+  showToast('💰 Tesoro registrado');
+}
+
+function renderJournalLoot() {
+  var container = document.getElementById('journal_loot_list');
+  var totalEl   = document.getElementById('journal_loot_total');
+  if (!container) return;
+  if (!char.journal_loot || !char.journal_loot.length) {
+    container.innerHTML = '<p class="empty-msg">Ningún tesoro registrado</p>';
+    if (totalEl) totalEl.textContent = '';
+    return;
+  }
+  var typeIcons = { monedas:'💰', objeto:'⚔', magico:'✨', gema:'💎', otro:'📦' };
+  var total = char.journal_loot.reduce(function(s,l){ return s+(l.value||0); }, 0);
+
+  container.innerHTML = char.journal_loot.map(function(l, i) {
+    return '<div class="journal-entry-card">'
+      + '<div class="journal-entry-header">'
+      + '<div>'
+      + '<span class="journal-entry-title">' + (typeIcons[l.type]||'📦') + ' ' + l.name + '</span>'
+      + (l.session ? '<span class="journal-entry-meta" style="margin-left:8px">' + l.session + '</span>' : '')
+      + '</div>'
+      + '<div style="display:flex;gap:6px;align-items:center">'
+      + (l.value ? '<span style="font-size:0.78rem;color:#f0ad4e;font-family:var(--font-title)">' + l.value + ' po</span>' : '')
+      + '<button class="btn-remove" onclick="removeJournalEntry(\'journal_loot\',' + i + ')">✕</button>'
+      + '</div></div>'
+      + '</div>';
+  }).join('');
+
+  if (totalEl && total > 0) totalEl.textContent = 'Valor total registrado: ' + total.toLocaleString() + ' po';
+}
+
+// ── SHARED ───────────────────────────────────────────────────
+function removeJournalEntry(key, i) {
+  if (!char[key]) return;
+  char[key].splice(i, 1);
+  if (key === 'journal_npcs')   renderJournalNPCs();
+  if (key === 'journal_places') renderJournalPlaces();
+  if (key === 'journal_quests') renderJournalQuests();
+  if (key === 'journal_loot')   renderJournalLoot();
+  saveCharacter();
+}
+
+function renderJournal() {
+  renderJournal();
+  renderJournalNPCs();
+  renderJournalPlaces();
+  renderJournalQuests();
+  renderJournalLoot();
 }
 
 function goToOriginTab() {
@@ -3697,7 +4773,7 @@ function buildOriginSelects() {
   // Magic items initial state
   // Render applied
   renderCharFeats();
-  renderSessions();
+  renderJournal();
 }
 
 function onRaceChange() {
@@ -4875,21 +5951,27 @@ function infoRow(label, val) {
 
 function addMonsterToEncounter() {
   if (!selectedMonster) return;
-  // Add to encounter tracker
-  var initRoll = Math.ceil(Math.random() * 20) + Math.floor((selectedMonster.dex - 10) / 2);
+  var dexMod   = Math.floor(((selectedMonster.dex || 10) - 10) / 2);
+  var initRoll = Math.ceil(Math.random() * 20) + dexMod;
   var hpMax    = parseInt(selectedMonster.hp) || 10;
   dmData.encounter = dmData.encounter || [];
   dmData.encounter.push({
+    id: Date.now(),
     name: selectedMonster.name,
     hp: hpMax, hpMax: hpMax,
     ac: selectedMonster.ac,
-    init: initRoll, isPlayer: false
+    init: initRoll,
+    isPlayer: false,
+    dead: false, active: false,
+    monsterData: selectedMonster  // store full stats
   });
   renderEncounter();
   saveDMData();
+  // Sort by initiative
+  dmData.encounter.sort(function(a,b){ return b.init - a.init; });
+  renderEncounter();
+  saveDMData();
   showToast(selectedMonster.name + ' añadido al tracker (init: ' + initRoll + ')');
-  // Open encounter section
-  toggleDMRef('ref_actions'); // just to open nearby
 }
 
 function addMonsterToXPCalc() {
@@ -4904,7 +5986,445 @@ function addMonsterToXPCalc() {
   showToast(selectedMonster.name + ' añadido a la calculadora (ND ' + nd + ')');
 }
 
-// ── ENCOUNTER TRACKER ─────────────────────────────────────
+// ============================================================
+// GENERADOR DE TESORO (tablas DMG SRD)
+// ============================================================
+
+// Last generated loot for adding to journal/inventory
+var lastLoot = null;
+
+// Coin multipliers by tier and type
+var LOOT_TABLES = {
+  individual: {
+    // ND 0-4
+    0:  { cp:[5,6], sp:[3,6], ep:[0,0], gp:[0,0], pp:[0,0],
+          items:[] },
+    // ND 5-10
+    5:  { cp:[0,0], sp:[4,6], ep:[1,6], gp:[0,0], pp:[0,0],
+          items:['Gema (10 po)', 'Objeto de arte (25 po)', 'Poción de curación'] },
+    // ND 11-16
+    11: { cp:[0,0], sp:[0,0], ep:[0,0], gp:[4,6], pp:[0,0],
+          items:['Gema (50 po)', 'Objeto de arte (250 po)', 'Pergamino de hechizo (nivel 1d4)'] },
+    // ND 17+
+    17: { cp:[0,0], sp:[0,0], ep:[0,0], gp:[2,6], pp:[1,6],
+          items:['Gema (100 po)', 'Objeto de arte (750 po)', 'Objeto mágico menor'] }
+  },
+  hoard: {
+    0:  { cp:[6,6], sp:[3,6], ep:[0,0], gp:[2,6], pp:[0,0],
+          items:[
+            'Gema (10 po) x2d6',
+            'Objeto de arte (25 po)',
+            'Pergamino de hechizo (nivel 1)',
+            'Poción de curación x1d4'
+          ]},
+    5:  { cp:[0,0], sp:[2,6], ep:[0,0], gp:[6,6], pp:[0,0],
+          items:[
+            'Gema (50 po) x1d4',
+            'Objeto de arte (25 po) x1d6',
+            'Objeto mágico (tabla A)',
+            'Pergamino de hechizo (nivel 1d3+1)',
+            'Poción de curación mayor'
+          ]},
+    11: { cp:[0,0], sp:[0,0], ep:[0,0], gp:[4,6], pp:[5,6],
+          items:[
+            'Gema (100 po) x1d6',
+            'Objeto de arte (250 po) x1d4',
+            'Objeto mágico (tabla B)',
+            'Pergamino de hechizo (nivel 1d4+2)',
+            'Poción de velocidad'
+          ]},
+    17: { cp:[0,0], sp:[0,0], ep:[0,0], gp:[12,6], pp:[8,6],
+          items:[
+            'Gema (500 po) x1d8',
+            'Objeto de arte (750 po) x1d4',
+            'Objeto mágico (tabla C)',
+            'Pergamino de hechizo (nivel 1d4+4)',
+            'Poción de curación suprema'
+          ]}
+  }
+};
+
+// Magic items by rarity for treasure tables
+var MAGIC_ITEM_TABLES = {
+  A: [
+    'Poción de curación','Pergamino (Alarma)','Pergamino (Armadura de mago)',
+    'Pergamino (Detectar magia)','Aceite resbaladizo','Poción de escalar',
+    'Pergamino (Imagen menor)','Poción de resistencia al fuego','Munición +1 (20)',
+    'Amuleto de prueba contra detección y localización'
+  ],
+  B: [
+    'Poción de curación mayor','Pergamino (Invisibilidad)','Botas de elfo',
+    'Capa de protección','Guanteletes de destreza de ogro','Sombrero de disfraz',
+    'Anillo de salto','Vara de detección de trampas','Pergamino (Vuelo)',
+    'Espada +1','Escudo +1','Armadura de cuero +1'
+  ],
+  C: [
+    'Poción de curación superior','Capa de desplazamiento','Espada +2',
+    'Armadura de cota de malla +1','Brazales de arquería','Broche de escudos',
+    'Cinturón de fuerza de gigante de colinas','Bola de cristal (básica)',
+    'Anillo de protección','Capa de la araña aráñida','Diadema del intelecto'
+  ]
+};
+
+function rollDice(count, sides) {
+  var total = 0;
+  for (var i = 0; i < count; i++) {
+    total += Math.ceil(Math.random() * sides);
+  }
+  return total;
+}
+
+function generateLoot() {
+  var tier   = parseInt(document.getElementById('loot_nd_select').value);
+  var type   = document.getElementById('loot_type_select').value;
+  var table  = LOOT_TABLES[type][tier];
+
+  // Roll coins
+  var coins = {};
+  var coinNames = { cp:'PC', sp:'PP', ep:'PE', gp:'PO', pp:'PL' };
+  var totalGold = 0;
+
+  ['cp','sp','ep','gp','pp'].forEach(function(coin) {
+    var range = table[coin];
+    if (range[0] > 0 || range[1] > 0) {
+      var mult = type === 'hoard' ? 100 : 1;
+      var val  = rollDice(range[0], range[1]) * mult;
+      if (val > 0) {
+        coins[coin] = val;
+        // Convert to gold equivalent
+        var rates = { cp:0.01, sp:0.1, ep:0.5, gp:1, pp:10 };
+        totalGold += val * rates[coin];
+      }
+    }
+  });
+
+  // Roll items
+  var items = [];
+  var numItems = type === 'hoard' ? rollDice(1, 4) : (Math.random() < 0.3 ? 1 : 0);
+  var pool = table.items.slice();
+
+  // Add magic item from table
+  var tableLetter = null;
+  pool.forEach(function(item) {
+    var m = item.match(/tabla ([ABC])/);
+    if (m) tableLetter = m[1];
+  });
+
+  for (var i = 0; i < numItems && pool.length; i++) {
+    var idx  = Math.floor(Math.random() * pool.length);
+    var item = pool[idx];
+    pool.splice(idx, 1);
+
+    // Replace "tabla X" with actual magic item
+    if (item.match(/tabla ([ABC])/)) {
+      var letter = item.match(/tabla ([ABC])/)[1];
+      var magicPool = MAGIC_ITEM_TABLES[letter];
+      item = magicPool[Math.floor(Math.random() * magicPool.length)];
+    }
+    // Roll quantity if has xNdM
+    item = item.replace(/x(\d+)d(\d+)/, function(m, c, s) {
+      return 'x' + rollDice(parseInt(c), parseInt(s));
+    });
+    // Roll spell level if has nivel 1dX
+    item = item.replace(/nivel (\d+)d(\d+)([+-]\d+)?/, function(m, c, s, mod) {
+      var lvl = rollDice(parseInt(c), parseInt(s)) + (parseInt(mod)||0);
+      return 'nivel ' + Math.min(9, Math.max(1, lvl));
+    });
+    items.push(item);
+  }
+
+  // Store for later use
+  lastLoot = { coins: coins, items: items, totalGold: Math.round(totalGold) };
+
+  // Display
+  var coinsEl = document.getElementById('loot_coins');
+  var itemsEl = document.getElementById('loot_items');
+  var result  = document.getElementById('loot_result');
+
+  var coinStr = Object.keys(coins).map(function(c) {
+    return '<span style="color:var(--gold2);font-family:var(--font-title);font-size:1rem">' + coins[c].toLocaleString() + '</span> ' + coinNames[c];
+  }).join('  ·  ');
+
+  coinsEl.innerHTML = coinStr || '<span style="color:var(--text3)">Sin monedas</span>';
+  coinsEl.innerHTML += '<span style="color:var(--text3);font-size:0.72rem;margin-left:8px">(≈' + lastLoot.totalGold.toLocaleString() + ' po total)</span>';
+
+  itemsEl.innerHTML = items.length
+    ? '<div style="margin-top:4px;font-size:0.72rem;color:var(--gold2);letter-spacing:1px;margin-bottom:4px">OBJETOS</div>'
+      + items.map(function(it) { return '<div style="padding:3px 0;border-bottom:1px solid var(--bg4)">✦ ' + it + '</div>'; }).join('')
+    : '<div style="color:var(--text3);font-style:italic;font-size:0.82rem">Sin objetos adicionales</div>';
+
+  result.style.display = 'block';
+}
+
+function addLootToJournal() {
+  if (!lastLoot) return;
+  if (!char.journal_loot) char.journal_loot = [];
+
+  // Add coins as one entry
+  var coinNames = { cp:'PC', sp:'PP', ep:'PE', gp:'PO', pp:'PL' };
+  var coinStr = Object.keys(lastLoot.coins).map(function(c){
+    return lastLoot.coins[c] + ' ' + coinNames[c];
+  }).join(', ');
+
+  if (coinStr) {
+    char.journal_loot.unshift({
+      name: 'Monedas de encuentro: ' + coinStr,
+      type: 'monedas', value: lastLoot.totalGold,
+      session: 'Generado', id: Date.now()
+    });
+  }
+
+  lastLoot.items.forEach(function(item, i) {
+    char.journal_loot.unshift({
+      name: item, type: 'objeto', value: 0,
+      session: 'Generado', id: Date.now() + i + 1
+    });
+  });
+
+  saveCharacter();
+  showToast('💰 Tesoro añadido al diario de campaña');
+  // Switch to journal loot tab
+  switchJournalTab('journal_loot');
+  renderJournalLoot();
+}
+
+function addLootToInventory() {
+  if (!lastLoot) return;
+  if (!char.inventory) char.inventory = [];
+
+  // Add coins to coin fields
+  var coinFields = { cp:'coin_cp', sp:'coin_sp', ep:'coin_ep', gp:'coin_gp', pp:'coin_pp' };
+  Object.keys(lastLoot.coins).forEach(function(c) {
+    var el = document.getElementById(coinFields[c]);
+    if (el) el.value = (parseInt(el.value)||0) + lastLoot.coins[c];
+  });
+
+  // Add items to inventory
+  lastLoot.items.forEach(function(item) {
+    char.inventory.push({ name: item, qty: 1, weight: 0, value: 0 });
+  });
+
+  renderInventory();
+  saveCharacter();
+  showToast('🎒 Tesoro añadido al inventario');
+}
+
+function rollAllInitiatives() {
+  if (!dmData.encounter.length) {
+    showToast('No hay criaturas en el tracker');
+    return;
+  }
+  var rolled = 0;
+  dmData.encounter.forEach(function(c) {
+    // Roll d20 + DEX mod from stored monster data if available
+    var dexMod = 0;
+    if (c.monsterData && c.monsterData.dex) {
+      dexMod = Math.floor((c.monsterData.dex - 10) / 2);
+    }
+    c.init = Math.ceil(Math.random() * 20) + dexMod;
+    rolled++;
+  });
+  dmData.encounter.sort(function(a,b){ return b.init - a.init; });
+  renderEncounter();
+  saveDMData();
+  showToast('🎲 Iniciativas tiradas para ' + rolled + ' criaturas');
+}
+
+function togglePlayerInitiatives() {
+  var panel = document.getElementById('player_initiatives');
+  if (!panel) return;
+  var visible = panel.style.display !== 'none';
+  if (visible) {
+    panel.style.display = 'none';
+    return;
+  }
+  // Build player inputs from roster
+  var roster = getRoster();
+  var inputs = document.getElementById('player_init_inputs');
+  if (!inputs) return;
+  if (!roster.length) {
+    inputs.innerHTML = '<span style="color:var(--text3);font-size:0.8rem">No hay personajes en el roster</span>';
+  } else {
+    inputs.innerHTML = roster.map(function(r) {
+      return '<div style="display:flex;flex-direction:column;align-items:center;gap:2px">'
+        + '<span style="font-size:0.68rem;color:var(--text2);max-width:70px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + (r.name || r.cls) + '</span>'
+        + '<input type="number" id="pinit_' + r.id + '" placeholder="Init" data-name="' + (r.name || r.cls) + '" data-id="' + r.id + '" style="width:56px;text-align:center">'
+        + '<button onclick="rollPlayerInit(\'' + r.id + '\')" style="background:none;border:none;color:var(--text3);cursor:pointer;font-size:0.75rem;padding:0">🎲</button>'
+        + '</div>';
+    }).join('');
+  }
+  panel.style.display = 'block';
+}
+
+function rollPlayerInit(id) {
+  var el = document.getElementById('pinit_' + id);
+  if (el) el.value = Math.ceil(Math.random() * 20);
+}
+
+function addPlayersToTracker() {
+  var inputs = document.querySelectorAll('#player_init_inputs input[type=number]');
+  var added  = 0;
+  inputs.forEach(function(inp) {
+    var init = parseInt(inp.value);
+    var name = inp.dataset.name;
+    if (!name || isNaN(init)) return;
+    // Avoid duplicates
+    var exists = dmData.encounter.find(function(c){ return c.name === name && c.isPlayer; });
+    if (exists) { exists.init = init; }
+    else {
+      dmData.encounter.push({
+        id: Date.now() + added,
+        name: name,
+        hp: 0, hpMax: 0, ac: 0,
+        init: init,
+        isPlayer: true,
+        dead: false, active: false
+      });
+    }
+    added++;
+  });
+  if (added) {
+    dmData.encounter.sort(function(a,b){ return b.init - a.init; });
+    renderEncounter();
+    saveDMData();
+    showToast('👥 ' + added + ' jugadores añadidos al tracker');
+    document.getElementById('player_initiatives').style.display = 'none';
+  }
+}
+
+// ── BÚSQUEDA GLOBAL ──────────────────────────────────────────
+var globalSearchFilter = 'all';
+
+function openGlobalSearch() {
+  document.getElementById('global_search_modal').style.display = 'block';
+  setTimeout(function(){ document.getElementById('global_search_input').focus(); }, 100);
+}
+
+function closeGlobalSearch(e) {
+  if (!e || e.target === document.getElementById('global_search_modal')) {
+    document.getElementById('global_search_modal').style.display = 'none';
+    document.getElementById('global_search_input').value = '';
+    document.getElementById('global_search_results').innerHTML =
+      '<p style="color:var(--text3);text-align:center;padding:20px;font-size:0.85rem">Escribe para buscar en hechizos, monstruos y objetos mágicos</p>';
+  }
+}
+
+function setGlobalFilter(f) {
+  globalSearchFilter = f;
+  document.querySelectorAll('.gs-filter').forEach(function(b){
+    b.classList.toggle('active', b.dataset.gf === f);
+  });
+  runGlobalSearch();
+}
+
+function runGlobalSearch() {
+  var q = (document.getElementById('global_search_input').value || '').toLowerCase().trim();
+  var results = document.getElementById('global_search_results');
+  if (q.length < 2) {
+    results.innerHTML = '<p style="color:var(--text3);text-align:center;padding:20px;font-size:0.85rem">Escribe al menos 2 caracteres</p>';
+    return;
+  }
+  var html = '';
+  var total = 0;
+
+  // Hechizos
+  if ((globalSearchFilter === 'all' || globalSearchFilter === 'spells') && typeof SPELLS_DATA !== 'undefined') {
+    var spells = SPELLS_DATA.filter(function(s){
+      return s.name.toLowerCase().indexOf(q) > -1 || (s.school && s.school.toLowerCase().indexOf(q) > -1);
+    }).slice(0, 8);
+    if (spells.length) {
+      html += '<div class="gs-section-title">✨ Hechizos</div>';
+      html += spells.map(function(s) {
+        var lvl = s.level === 0 ? 'Truco' : 'Nv.' + s.level;
+        return '<div class="gs-result-item" onclick="gsSelectSpell(' + JSON.stringify(s).replace(/"/g,'&quot;') + ')">'
+          + '<div class="gs-result-name">' + s.name + '</div>'
+          + '<div class="gs-result-meta">' + lvl + ' · ' + (s.school||'') + '</div></div>';
+      }).join('');
+      total += spells.length;
+    }
+  }
+
+  // Monstruos
+  if ((globalSearchFilter === 'all' || globalSearchFilter === 'monsters') && typeof MONSTERS_DATA !== 'undefined') {
+    var monsters = MONSTERS_DATA.filter(function(m){
+      return m.name.toLowerCase().indexOf(q) > -1 || (m.type && m.type.toLowerCase().indexOf(q) > -1);
+    }).slice(0, 8);
+    if (monsters.length) {
+      html += '<div class="gs-section-title">🐉 Monstruos</div>';
+      html += monsters.map(function(m) {
+        var ndColor = ndToColor(m.nd);
+        return '<div class="gs-result-item" onclick="gsSelectMonster(' + JSON.stringify(m).replace(/"/g,'&quot;') + ')">'
+          + '<div class="gs-result-name">' + m.name + '</div>'
+          + '<div class="gs-result-meta"><span style="color:' + ndColor + ';font-weight:bold">ND ' + m.nd + '</span> · ' + m.type + ' · CA ' + m.ac + '</div></div>';
+      }).join('');
+      total += monsters.length;
+    }
+  }
+
+  // Objetos mágicos
+  if ((globalSearchFilter === 'all' || globalSearchFilter === 'items') && typeof MAGIC_ITEMS_DATA !== 'undefined') {
+    var magicItems = MAGIC_ITEMS_DATA.filter(function(i){
+      return i.name.toLowerCase().indexOf(q) > -1 || (i.type && i.type.toLowerCase().indexOf(q) > -1);
+    }).slice(0, 8);
+    if (magicItems.length) {
+      var rarityColors = {'Común':'#95a5a6','Poco común':'#27ae60','Raro':'#2980b9','Muy raro':'#8e44ad','Legendario':'#f39c12','Artefacto':'#e74c3c'};
+      html += '<div class="gs-section-title">💎 Objetos mágicos</div>';
+      html += magicItems.map(function(it) {
+        var rc = rarityColors[it.rarity] || 'var(--text3)';
+        return '<div class="gs-result-item" onclick="gsSelectItem(' + JSON.stringify(it).replace(/"/g,'&quot;') + ')">'
+          + '<div class="gs-result-name">' + it.name + '</div>'
+          + '<div class="gs-result-meta"><span style="color:' + rc + '">' + (it.rarity||'') + '</span> · ' + (it.type||'') + '</div></div>';
+      }).join('');
+      total += magicItems.length;
+    }
+  }
+
+  results.innerHTML = total ? html
+    : '<p style="color:var(--text3);text-align:center;padding:20px;font-size:0.85rem">Sin resultados para "' + q + '"</p>';
+}
+
+function gsSelectSpell(spell) {
+  closeGlobalSearch();
+  document.querySelectorAll('.tab-btn').forEach(function(b){ b.classList.remove('active'); });
+  document.querySelectorAll('.tab-panel').forEach(function(p){ p.classList.remove('active'); });
+  document.querySelector('[data-tab="magic"]').classList.add('active');
+  document.getElementById('tab-magic').classList.add('active');
+  selectSpell(spell);
+  setTimeout(function(){
+    var card = document.getElementById('spell_detail_card');
+    if (card) card.scrollIntoView({ behavior:'smooth', block:'nearest' });
+  }, 200);
+}
+
+function gsSelectMonster(monster) {
+  selectedMonster = monster;
+  closeGlobalSearch();
+  var dmTab = document.getElementById('tab-dm');
+  if (dmTab && dmTab.classList.contains('active')) {
+    selectMonster(monster);
+  } else {
+    document.querySelectorAll('.tab-btn').forEach(function(b){ b.classList.remove('active'); });
+    document.querySelectorAll('.tab-panel').forEach(function(p){ p.classList.remove('active'); });
+    var dmBtn = document.querySelector('[data-tab="dm"]');
+    if (dmBtn && dmTab) { dmBtn.classList.add('active'); dmTab.classList.add('active'); }
+    setTimeout(function(){ selectMonster(monster); }, 200);
+  }
+}
+
+function gsSelectItem(item) {
+  closeGlobalSearch();
+  document.querySelectorAll('.tab-btn').forEach(function(b){ b.classList.remove('active'); });
+  document.querySelectorAll('.tab-panel').forEach(function(p){ p.classList.remove('active'); });
+  document.querySelector('[data-tab="inventory"]').classList.add('active');
+  document.getElementById('tab-inventory').classList.add('active');
+  var searchEl = document.getElementById('magic_item_search');
+  if (searchEl) {
+    searchEl.value = item.name;
+    filterMagicItems();
+    setTimeout(function(){ searchEl.scrollIntoView({ behavior:'smooth', block:'center' }); }, 200);
+  }
+}
+
 function addEncounterCreature() {
   var name = document.getElementById('enc_name').value.trim();
   if (!name) { showToast('Escribe el nombre de la criatura'); return; }
@@ -4970,27 +6490,93 @@ function renderEncounter() {
     return;
   }
   container.innerHTML = dmData.encounter.map(function(c) {
-    var hpPct = Math.round(c.hp / c.hpMax * 100);
-    var hpColor = hpPct > 50 ? '#27ae60' : hpPct > 25 ? '#f39c12' : '#e74c3c';
-    var deadClass = c.dead ? ' dead' : '';
+    var hpPct    = Math.round(c.hp / c.hpMax * 100);
+    var hpColor  = hpPct > 50 ? '#27ae60' : hpPct > 25 ? '#f39c12' : '#e74c3c';
+    var deadClass   = c.dead ? ' dead' : '';
     var activeClass = c.active ? ' active-turn' : '';
-    return '<div class="creature-row'+deadClass+activeClass+'" id="cr_'+c.id+'">'
-      +'<div onclick="toggleActiveTurn('+c.id+')" style="cursor:pointer;font-size:1.1rem;opacity:'+(c.active?'1':'0.3')+'" title="Turno activo">▶</div>'
-      +'<div class="creature-name">'+c.name+'</div>'
-      +'<div class="creature-stat"><label>INIT</label>'+c.init+'</div>'
-      +'<div class="creature-stat"><label>CA</label>'+c.ac+'</div>'
-      +'<div style="display:flex;flex-direction:column;align-items:center;gap:2px">'
-      +'<label style="font-size:0.6rem;color:var(--text3)">HP</label>'
-      +'<div style="display:flex;align-items:center;gap:3px">'
-      +'<button onclick="updateCreatureHP('+c.id+',-1)" style="background:none;border:1px solid var(--border2);color:var(--text2);border-radius:3px;width:18px;height:18px;cursor:pointer;font-size:0.8rem;line-height:1;padding:0">−</button>'
-      +'<input class="hp-input-sm" type="number" value="'+c.hp+'" min="0" max="'+c.hpMax+'" onchange="setCreatureHP('+c.id+',this.value)" style="color:'+hpColor+'">'
-      +'<button onclick="updateCreatureHP('+c.id+',+1)" style="background:none;border:1px solid var(--border2);color:var(--text2);border-radius:3px;width:18px;height:18px;cursor:pointer;font-size:0.8rem;line-height:1;padding:0">+</button>'
-      +'</div>'
-      +'<div style="font-size:0.65rem;color:var(--text3)">/ '+c.hpMax+'</div>'
-      +'</div>'
-      +'<button class="btn-remove" onclick="removeCreature('+c.id+')">✕</button>'
-      +'</div>';
+    var hasStats    = c.monsterData ? true : false;
+
+    // Compact hp bar
+    var hpBar = '<div style="height:3px;border-radius:2px;background:var(--bg4);margin-top:2px;width:60px">'
+      + '<div style="height:100%;width:' + Math.max(0,hpPct) + '%;background:' + hpColor + ';border-radius:2px;transition:width 0.3s"></div></div>';
+
+    return '<div class="creature-row' + deadClass + activeClass + '" id="cr_' + c.id + '">'
+      // Row principal
+      + '<div style="display:flex;align-items:center;gap:6px;width:100%">'
+      + '<div onclick="toggleActiveTurn(' + c.id + ')" style="cursor:pointer;font-size:1.1rem;opacity:' + (c.active ? '1' : '0.3') + '" title="Turno activo">▶</div>'
+      + '<div style="flex:1;min-width:0">'
+      + '<div style="display:flex;align-items:center;gap:4px">'
+      + '<span class="creature-name">' + c.name + '</span>'
+      + (hasStats ? '<button onclick="toggleCreatureStats(' + c.id + ')" style="background:none;border:none;color:var(--text3);cursor:pointer;font-size:0.7rem;padding:0 2px" title="Ver stats">📋</button>' : '')
+      + '</div>'
+      + (hasStats ? '<div style="font-size:0.68rem;color:var(--text3)">CA ' + c.ac + ' · ' + (c.monsterData.type || '') + ' · ND ' + (c.monsterData.nd || '?') + '</div>' : '')
+      + '</div>'
+      + '<div class="creature-stat"><label>INIT</label>' + c.init + '</div>'
+      + '<div class="creature-stat"><label>CA</label>' + c.ac + '</div>'
+      + '<div style="display:flex;flex-direction:column;align-items:center;gap:2px">'
+      + '<label style="font-size:0.6rem;color:var(--text3)">HP</label>'
+      + '<div style="display:flex;align-items:center;gap:3px">'
+      + '<button onclick="updateCreatureHP(' + c.id + ',-1)" style="background:none;border:1px solid var(--border2);color:var(--text2);border-radius:3px;width:18px;height:18px;cursor:pointer;font-size:0.8rem;line-height:1;padding:0">−</button>'
+      + '<input class="hp-input-sm" type="number" value="' + c.hp + '" min="0" max="' + c.hpMax + '" onchange="setCreatureHP(' + c.id + ',this.value)" style="color:' + hpColor + '">'
+      + '<button onclick="updateCreatureHP(' + c.id + ',+1)" style="background:none;border:1px solid var(--border2);color:var(--text2);border-radius:3px;width:18px;height:18px;cursor:pointer;font-size:0.8rem;line-height:1;padding:0">+</button>'
+      + '</div>'
+      + '<div style="font-size:0.65rem;color:' + hpColor + '">' + c.hp + '/' + c.hpMax + '</div>'
+      + hpBar
+      + '</div>'
+      + '<button class="btn-remove" onclick="removeCreature(' + c.id + ')">✕</button>'
+      + '</div>'
+      // Stat block expandable (hidden by default)
+      + (hasStats
+          ? '<div id="crstats_' + c.id + '" style="display:none;margin-top:8px;padding-top:8px;border-top:1px solid var(--border2)">'
+            + buildCreatureStatBlock(c.monsterData)
+            + '</div>'
+          : '')
+      + '</div>';
   }).join('');
+}
+
+function toggleCreatureStats(id) {
+  var el = document.getElementById('crstats_' + id);
+  if (el) el.style.display = el.style.display === 'none' ? 'block' : 'none';
+}
+
+function buildCreatureStatBlock(m) {
+  if (!m) return '';
+  var ndColor = ndToColor(m.nd || '0');
+
+  var html = '<div style="font-size:0.78rem">'
+    // Title bar
+    + '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">'
+    + '<span style="font-family:var(--font-title);color:var(--gold);font-size:0.9rem">' + m.name + '</span>'
+    + '<span style="color:' + ndColor + ';font-size:0.75rem;font-weight:bold">ND ' + (m.nd||'?') + ' · ' + (m.xp||0).toLocaleString() + ' XP</span>'
+    + '</div>'
+    // Stats grid
+    + '<div style="display:grid;grid-template-columns:repeat(6,1fr);gap:3px;background:var(--bg4);border-radius:4px;padding:6px;margin-bottom:6px;text-align:center">'
+    + miniStat('FUE', m.str) + miniStat('DES', m.dex) + miniStat('CON', m.con)
+    + miniStat('INT', m.int) + miniStat('SAB', m.wis) + miniStat('CAR', m.cha)
+    + '</div>';
+
+  // Info rows
+  if (m.speed)   html += '<div><strong style="color:var(--gold2)">Vel:</strong> ' + m.speed + '</div>';
+  if (m.saves)   html += '<div><strong style="color:var(--gold2)">Salvaciones:</strong> ' + m.saves + '</div>';
+  if (m.immune)  html += '<div><strong style="color:var(--gold2)">Inmune:</strong> ' + m.immune + '</div>';
+  if (m.resist)  html += '<div><strong style="color:var(--gold2)">Resist:</strong> ' + m.resist + '</div>';
+  if (m.senses)  html += '<div><strong style="color:var(--gold2)">Sentidos:</strong> ' + m.senses + '</div>';
+
+  // Traits and actions (collapsible for space)
+  if (m.traits)  html += '<div style="margin-top:4px"><strong style="color:var(--gold2)">Rasgos:</strong> ' + m.traits + '</div>';
+  if (m.actions) html += '<div style="margin-top:4px"><strong style="color:var(--gold2)">Acciones:</strong> ' + m.actions + '</div>';
+
+  html += '</div>';
+  return html;
+}
+
+function miniStat(label, val) {
+  var mod  = Math.floor(((val||10) - 10) / 2);
+  var sign = mod >= 0 ? '+' : '';
+  return '<div><div style="font-size:0.6rem;color:var(--gold2)">' + label + '</div>'
+    + '<div style="font-weight:bold;font-size:0.82rem">' + val + '</div>'
+    + '<div style="font-size:0.65rem;color:var(--text3)">(' + sign + mod + ')</div></div>';
 }
 
 // ── NPCs ──────────────────────────────────────────────────
@@ -5275,7 +6861,7 @@ function openCharacter(id) {
     char.weapon_idx=0; char.attack_attr='str'; char.weapon_prof=false; char.inspiration=false;
     char.skill_profs={}; char.save_profs={}; char.spell_slots_used={};
     char.char_spells=[]; char.custom_attacks=[]; char.inventory=[];
-    char.coins={pp:0,gp:0,ep:0,cp:0}; char.conditions=[];
+    char.coins={pp:0,gp:0,ep:0,cp:0}; char.conditions=[]; char.resources={}; char.journal_npcs=[]; char.journal_places=[]; char.journal_quests=[]; char.journal_loot=[];
     char.notes_traits=''; char.notes_features=''; char.notes_general='';
     char.feats=[]; char.applied_race=null; char.applied_bg=null; char.applied_subclass=null;
     char.sessions=[]; char.xp=0; char.concentrating=null; char.portrait=null;
@@ -5302,7 +6888,7 @@ function newCharacter() {
   char.weapon_idx=0; char.attack_attr='str'; char.weapon_prof=false; char.inspiration=false;
   char.skill_profs={}; char.save_profs={}; char.spell_slots_used={};
   char.char_spells=[]; char.custom_attacks=[]; char.inventory=[];
-  char.coins={pp:0,gp:0,ep:0,cp:0}; char.conditions=[];
+  char.coins={pp:0,gp:0,ep:0,cp:0}; char.conditions=[]; char.resources={}; char.journal_npcs=[]; char.journal_places=[]; char.journal_quests=[]; char.journal_loot=[];
   char.notes_traits=''; char.notes_features=''; char.notes_general='';
   char.feats=[]; char.applied_race=null; char.applied_bg=null; char.applied_subclass=null;
   char.sessions=[]; char.xp=0; char.concentrating=null; char.portrait=null;
@@ -5636,7 +7222,7 @@ function createGeneratedCharacter() {
   char.weapon_idx=0; char.attack_attr='str'; char.weapon_prof=false; char.inspiration=false;
   char.skill_profs={}; char.save_profs={}; char.spell_slots_used={};
   char.char_spells=[]; char.custom_attacks=[]; char.inventory=[];
-  char.coins={pp:0,gp:0,ep:0,cp:0}; char.conditions=[];
+  char.coins={pp:0,gp:0,ep:0,cp:0}; char.conditions=[]; char.resources={}; char.journal_npcs=[]; char.journal_places=[]; char.journal_quests=[]; char.journal_loot=[];
   char.notes_traits=''; char.notes_features=''; char.notes_general='';
   char.feats=[]; char.applied_race=null; char.applied_bg=null; char.applied_subclass=null;
   char.sessions=[]; char.xp=0; char.concentrating=null; char.portrait=null;
@@ -5740,6 +7326,18 @@ window.addEventListener('DOMContentLoaded', function() {
   loadDiceHistory();
   initQuickNotes();
   buildOriginSelects();
+
+  // Keyboard shortcut: Ctrl+K / Cmd+K for global search
+  document.addEventListener('keydown', function(e) {
+    if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
+      e.preventDefault();
+      openGlobalSearch();
+    }
+    if (e.key === 'Escape') {
+      closeGlobalSearch();
+      hideConditionTooltip();
+    }
+  });
   initXP();
   renderConcentration();
 
@@ -5757,13 +7355,19 @@ window.addEventListener('DOMContentLoaded', function() {
     // Show roster to pick
     showRoster();
   } else {
-    // First time — create default character
+    // First time — create default character and show tutorial
     var newId = 'char_' + Date.now();
     activeCharId = newId;
     try { localStorage.setItem(ACTIVE_KEY, newId); } catch(e) {}
     roster.push({ id: newId, name: '', cls: 'Barbarian', race: '', level: 1, lastSaved: Date.now() });
     saveRoster(roster);
     recalc();
+    // Show tutorial only if never seen before
+    var tutDone;
+    try { tutDone = localStorage.getItem('dnd5e_tutorial_done'); } catch(e) {}
+    if (!tutDone) {
+      setTimeout(function(){ showTutorial(); }, 400);
+    }
   }
 });
 
@@ -5936,6 +7540,12 @@ function recalc() {
   // Unarmed attacks update with stats
   renderUnarmedAttacks();
 
+  // Class resources
+  renderClassResources();
+
+  // Spell list header (prep count)
+  renderCharSpells();
+
   // Header name
   var nm = document.getElementById('char_name').value;
   document.getElementById('header_name').textContent = nm || 'Sin personaje';
@@ -5990,12 +7600,7 @@ function toggleSlot(level, pipIdx, total) {
 }
 
 function resetSlots() {
-  char.spell_slots_used = {};
-  const cls = document.getElementById('char_class').value;
-  const lvl = parseInt(document.getElementById('char_level').value) || 1;
-  updateSpellSlotsDisplay(cls, lvl);
-  saveCharacter();
-  showToast('¡Descanso largo completado!');
+  recoverLongRest();
 }
 
 // ============================================================
@@ -6351,23 +7956,11 @@ function rollUnarmedAttack(i) {
   var a = container._attacks[i];
   if (!a) return;
 
-  var d20   = Math.ceil(Math.random() * 20);
-  var total = d20 + a.atk;
+  var dmgFormula = a.dmg.replace(/\s/g,'');
+  // Handle fixed damage like "5 (fijo)"
+  if (dmgFormula.indexOf('(') > -1) dmgFormula = dmgFormula.split('(')[0].trim();
 
-  // Roll damage
-  var dmgResult;
-  if (a.dmg.indexOf('d') !== -1) {
-    dmgResult = rollFormula(a.dmg.replace(/\s/g,''));
-  } else {
-    var n = parseInt(a.dmg) || 1;
-    dmgResult = { total: n, detail: String(n) };
-  }
-
-  showDiceResult(
-    a.icon + ' ' + a.name,
-    total,
-    'd20(' + d20 + ') ' + fmtMod(a.atk) + ' | Daño: ' + dmgResult.detail + ' = ' + dmgResult.total + ' ' + a.type
-  );
+  rollAttack(a.icon + ' ' + a.name, a.atk, dmgFormula, a.type);
 
   // Switch to dice tab
   document.querySelectorAll('.tab-btn').forEach(function(b){ b.classList.remove('active'); });
@@ -6415,21 +8008,58 @@ function removeCustomAttack(i) {
 }
 
 function rollCustomAttack(i) {
-  const a = char.custom_attacks[i];
-  const d20 = Math.ceil(Math.random() * 20);
-  const total = d20 + a.bonus;
-  var dmgRoll = rollFormula(a.dmg);
-  showDiceResult(
-    a.name + ': Ataque',
-    total,
-    'd20(' + d20 + ') ' + fmtMod(a.bonus) + ' | Daño: ' + dmgRoll.detail + ' = ' + dmgRoll.total
-  );
+  var a = char.custom_attacks[i];
+  rollAttack(a.name, a.bonus, a.dmg, a.type);
 }
 
 // ============================================================
 // DICE ENGINE
 // ============================================================
 var diceHistory = [];
+
+// ── Tirada de ataque central con detección de crítico ────────
+function rollAttack(label, atkBonus, dmgFormula, dmgType) {
+  var d20   = Math.ceil(Math.random() * 20);
+  var total = d20 + atkBonus;
+  var isCrit = d20 === 20;
+  var isFail = d20 === 1;
+
+  var dmgResult;
+  if (isCrit) {
+    // Crítico: dobla todos los dados de daño
+    dmgResult = rollFormulaCrit(dmgFormula);
+  } else {
+    dmgResult = rollFormula(dmgFormula);
+  }
+
+  var prefix = isCrit ? '💥 ¡CRÍTICO! ' : (isFail ? '💀 Pifia — ' : '');
+  var detail = 'd20(' + d20 + ') ' + fmtMod(atkBonus)
+    + ' | Daño: ' + dmgResult.detail + ' = ' + dmgResult.total
+    + (dmgType ? ' ' + dmgType : '')
+    + (isCrit ? ' [DADOS DOBLES]' : '');
+
+  showDiceResult(prefix + label, total, detail, isCrit ? 'crit' : (isFail ? 'fail' : 'normal'));
+  return { d20: d20, total: total, isCrit: isCrit, isFail: isFail, dmg: dmgResult };
+}
+
+// Dobla todos los dados de daño para críticos
+function rollFormulaCrit(formula) {
+  // Handles XdY+Z — doubles the dice count
+  var match = formula.match(/(\d*)d(\d+)([+-]\d+)?/i);
+  if (!match) {
+    // Fixed value — just return double
+    var n = parseInt(formula) || 0;
+    return { total: n * 2, detail: formula + '×2=' + (n*2) + ' [crit]' };
+  }
+  var count = (parseInt(match[1]) || 1) * 2; // DOUBLE the dice
+  var sides  = parseInt(match[2]);
+  var mod    = parseInt(match[3]) || 0;
+  var rolls  = [];
+  for (var i = 0; i < count; i++) rolls.push(Math.ceil(Math.random() * sides));
+  var total = rolls.reduce(function(a,b){ return a+b; }, 0) + mod;
+  var detail = '[' + rolls.join(',') + ']' + (mod !== 0 ? (mod>0?'+':'') + mod : '') + ' [¡' + count + 'd' + sides + ' crítico!]';
+  return { total: total, detail: detail };
+}
 
 function rollDie(sides) {
   var result = Math.ceil(Math.random() * sides);
@@ -6471,23 +8101,15 @@ function rollWeaponAttack() {
   var atkMod  = getMod(ab[atkAttr]);
   var atkBonus = atkMod + (wpnProf ? prof : 0);
 
-  var d20   = Math.ceil(Math.random() * 20);
-  var total = d20 + atkBonus;
-
-  // Special case: unarmed strike "1+" means 1 + STR mod (minimum 1)
+  // Build damage formula
   var dmgFormula = weapon.dmg;
   if (dmgFormula === '1+') {
     dmgFormula = String(Math.max(1, 1 + atkMod));
   } else {
     dmgFormula = dmgFormula + (atkMod >= 0 ? '+' : '') + atkMod;
   }
-  var dmg = rollFormula(dmgFormula);
 
-  showDiceResult(
-    weapon.name + ': Ataque',
-    total,
-    'd20(' + d20 + ') ' + fmtMod(atkBonus) + ' | Daño: ' + dmg.detail + ' = ' + dmg.total + ' ' + weapon.type
-  );
+  rollAttack(weapon.name, atkBonus, dmgFormula, weapon.type);
 
   // Switch to dice tab
   document.querySelectorAll('.tab-btn').forEach(function(b){ b.classList.remove('active'); });
@@ -6497,33 +8119,49 @@ function rollWeaponAttack() {
 }
 
 function rollSkill(name, bonus) {
-  var d20 = Math.ceil(Math.random() * 20);
-  showDiceResult(name, d20 + bonus, 'd20(' + d20 + ') ' + fmtMod(bonus));
+  var d20  = Math.ceil(Math.random() * 20);
+  var type = d20 === 20 ? 'crit' : d20 === 1 ? 'fail' : 'normal';
+  showDiceResult(name, d20 + bonus, 'd20(' + d20 + ') ' + fmtMod(bonus), type);
 }
 
 function rollSave(name, bonus) {
-  var d20 = Math.ceil(Math.random() * 20);
-  showDiceResult('Salvación ' + name, d20 + bonus, 'd20(' + d20 + ') ' + fmtMod(bonus));
+  var d20  = Math.ceil(Math.random() * 20);
+  var type = d20 === 20 ? 'crit' : d20 === 1 ? 'fail' : 'normal';
+  showDiceResult('Salvación ' + name, d20 + bonus, 'd20(' + d20 + ') ' + fmtMod(bonus), type);
 }
 
-function showDiceResult(label, total, detail) {
+function showDiceResult(label, total, detail, type) {
   var area = document.getElementById('dice_result_area');
+  var numberColor = type === 'crit' ? '#f0ad4e' : type === 'fail' ? 'var(--red2)' : 'var(--gold2)';
+  var bgColor     = type === 'crit' ? 'rgba(240,173,78,0.08)' : type === 'fail' ? 'rgba(231,76,60,0.08)' : '';
+  var border      = type === 'crit' ? '1px solid rgba(240,173,78,0.4)' : type === 'fail' ? '1px solid rgba(231,76,60,0.3)' : 'none';
+
+  area.style.background = bgColor;
+  area.style.border     = border;
+  area.style.borderRadius = 'var(--radius)';
+  area.style.padding    = bgColor ? '10px' : '0';
+  area.style.transition = 'background 0.3s';
+
   area.innerHTML = '<div class="dice-roll-label">' + label + '</div>'
-    + '<div class="dice-roll-number">' + total + '</div>'
+    + '<div class="dice-roll-number" style="color:' + numberColor + (type === 'crit' ? ';font-size:2.8rem;animation:critPop 0.4s ease' : '') + '">' + total + '</div>'
     + '<div class="dice-roll-detail">' + detail + '</div>';
-  diceHistory.unshift({ label: label, total: total, detail: detail });
+
+  diceHistory.unshift({ label: label, total: total, detail: detail, type: type || 'normal' });
   if (diceHistory.length > 20) diceHistory.pop();
   saveDiceHistory();
   renderDiceHistory();
 }
 
 function renderDiceHistory() {
-  const h = document.getElementById('dice_history');
+  var h = document.getElementById('dice_history');
+  if (!h) return;
   if (!diceHistory.length) { h.innerHTML = ''; return; }
   h.innerHTML = diceHistory.map(function(r) {
+    var color = r.type === 'crit' ? '#f0ad4e' : r.type === 'fail' ? 'var(--red2)' : 'var(--gold2)';
+    var icon  = r.type === 'crit' ? '💥' : r.type === 'fail' ? '💀' : '';
     return '<div class="dice-history-item">'
-      + '<span>' + r.label + '</span>'
-      + '<span class="dice-hist-result">' + r.total + '</span>'
+      + '<span>' + (icon ? icon + ' ' : '') + r.label + '</span>'
+      + '<span class="dice-hist-result" style="color:' + color + '">' + r.total + '</span>'
       + '<span style="color:var(--text3);font-size:0.8rem">' + r.detail + '</span>'
       + '</div>';
   }).join('');
@@ -6699,7 +8337,13 @@ function addSpellToChar() {
     showToast('¡Ya tienes ese hechizo!');
     return;
   }
-  // Store full spell data for expandable display
+
+  // Determine if class prepares or knows spells
+  var cls = document.getElementById('char_class').value;
+  var isPreparer = ['Cleric','Druid','Paladin','Wizard'].indexOf(cls) > -1;
+  // Trucos are always prepared/known
+  var isCantrip  = selectedSpell.level === 0;
+
   char.char_spells.push({
     name:          selectedSpell.name,
     level:         selectedSpell.level,
@@ -6708,13 +8352,15 @@ function addSpellToChar() {
     range:         selectedSpell.range         || '—',
     duration:      selectedSpell.duration      || '—',
     concentration: selectedSpell.concentration || false,
+    ritual:        selectedSpell.ritual        || false,
     components:    selectedSpell.components    || {},
     desc:          selectedSpell.desc          || '',
     higher_levels: selectedSpell.higher_levels || '',
+    prepared:      isCantrip ? true : !isPreparer // known-casters always prepared
   });
   renderCharSpells();
   saveCharacter();
-  showToast(selectedSpell.name + ' añadido');
+  showToast(selectedSpell.name + ' añadido' + (isPreparer && !isCantrip ? ' (sin preparar)' : ''));
 }
 
 function concentrateOnSelected() {
@@ -6736,56 +8382,133 @@ function getFullSpellData(saved) {
   return full;
 }
 
+var spellListFilter = 'all';
+
+function filterSpellList(filter) {
+  spellListFilter = filter;
+  document.querySelectorAll('.spell-list-filter').forEach(function(b){
+    b.classList.toggle('active', b.dataset.spfilter === filter);
+  });
+  renderCharSpells();
+}
+
+function toggleSpellPrepared(name) {
+  var s = char.char_spells.find(function(sp){ return sp.name === name; });
+  if (!s) return;
+  s.prepared = !s.prepared;
+  renderCharSpells();
+  saveCharacter();
+  showToast(name + ': ' + (s.prepared ? '✓ Preparado' : 'Sin preparar'));
+}
+
 function renderCharSpells() {
-  const container = document.getElementById('char_spells_container');
+  var container = document.getElementById('char_spells_container');
+  var header    = document.getElementById('spell_list_header');
+  if (!container) return;
+
+  var cls   = document.getElementById('char_class').value;
+  var level = parseInt(document.getElementById('char_level').value) || 1;
+  var ab    = getAbilities();
+  var prof  = getProfBonus(level);
+
+  // Classes that prepare spells (not just know them)
+  var isPreparer = ['Cleric','Druid','Paladin','Wizard'].indexOf(cls) > -1;
+
+  // Show/hide header and prep info
+  if (header) {
+    header.style.display = char.char_spells.length && isPreparer ? 'block' : 'none';
+    if (isPreparer) {
+      var spellMod = getMod(ab[{ Cleric:'wis', Druid:'wis', Paladin:'cha', Wizard:'int' }[cls]]);
+      var maxPrep  = Math.max(1, spellMod + level);
+      var prepared = char.char_spells.filter(function(s){ return s.prepared && s.level > 0; }).length;
+      var prepEl   = document.getElementById('spell_prep_info');
+      if (prepEl) {
+        prepEl.innerHTML = '<strong style="color:' + (prepared > maxPrep ? 'var(--red2)' : 'var(--gold2)') + '">'
+          + prepared + ' / ' + maxPrep + '</strong>'
+          + ' hechizos preparados'
+          + ' <span style="font-size:0.72rem;color:var(--text3)">(mod ' + ({Cleric:'SAB',Druid:'SAB',Paladin:'CAR',Wizard:'INT'}[cls]) + ' + nivel)</span>';
+      }
+    }
+  }
+
   if (!char.char_spells.length) {
     container.innerHTML = '<p class="empty-msg">No hay hechizos añadidos</p>';
     return;
   }
 
+  // Apply filter
+  var spells = char.char_spells;
+  if (spellListFilter === 'prepared')   spells = spells.filter(function(s){ return s.prepared || s.level === 0; });
+  if (spellListFilter === 'unprepared') spells = spells.filter(function(s){ return !s.prepared && s.level > 0; });
+
+  if (!spells.length) {
+    container.innerHTML = '<p class="empty-msg">Sin hechizos con este filtro</p>';
+    return;
+  }
+
   // Group by level
-  const byLevel = {};
-  char.char_spells.forEach(function(saved) {
+  var byLevel = {};
+  spells.forEach(function(saved) {
     var s = getFullSpellData(saved);
+    s._prepared = saved.prepared !== undefined ? saved.prepared : true;
     if (!byLevel[s.level]) byLevel[s.level] = [];
     byLevel[s.level].push(s);
   });
 
   var html = '';
-  Object.keys(byLevel).sort(function(a,b) { return a-b; }).forEach(function(lvl) {
+  Object.keys(byLevel).sort(function(a,b){ return a-b; }).forEach(function(lvl) {
     html += '<div class="spell-level-header">' + (lvl == 0 ? 'Trucos' : 'Nivel ' + lvl) + '</div>';
     byLevel[lvl].forEach(function(s) {
-      var safeId = s.name.replace(/[^a-zA-Z0-9]/g, '_');
-
-      var comps = [];
+      var safeId   = s.name.replace(/[^a-zA-Z0-9]/g, '_');
+      var safeName = s.name.replace(/\\/g,'\\\\').replace(/'/g,"\\'");
+      var comps    = [];
       if (s.components) {
         if (s.components.v) comps.push('V');
         if (s.components.s) comps.push('S');
         if (s.components.m) comps.push('M');
       }
-      var compStr = comps.length ? comps.join(', ') : '—';
 
       var levelLabel  = s.level === 0 ? 'Truco' : 'Nv.' + s.level;
-      var schoolBadge = s.school ? '<span class="badge badge-school" style="margin-left:6px">' + s.school + '</span>' : '';
+      var schoolBadge = s.school ? '<span class="badge badge-school" style="margin-left:4px">' + s.school + '</span>' : '';
       var concBadge   = s.concentration ? '<span class="badge" style="background:rgba(200,168,75,0.12);color:var(--gold);border:1px solid rgba(200,168,75,0.3);margin-left:4px">Conc.</span>' : '';
-      var safeName    = s.name.replace(/\\/g,'\\\\').replace(/'/g,"\\'");
+      var ritualBadge = s.ritual ? '<span class="badge" style="background:rgba(92,184,92,0.1);color:#5cb85c;border:1px solid #5cb85c;margin-left:4px">Ritual</span>' : '';
 
-      html += '<div class="char-spell-row" id="csr_' + safeId + '">'
+      // Prepared toggle (only for preparers and non-cantrips)
+      var prepBtn = '';
+      if (isPreparer && s.level > 0) {
+        var isPrepared = s._prepared;
+        prepBtn = '<button onclick="toggleSpellPrepared(\'' + safeName + '\')" '
+          + 'style="font-size:0.65rem;padding:2px 7px;border-radius:10px;border:1px solid;cursor:pointer;margin-right:4px;'
+          + (isPrepared
+              ? 'background:rgba(41,128,185,0.15);border-color:#5bb3e8;color:#5bb3e8'
+              : 'background:var(--bg4);border-color:var(--border2);color:var(--text3)')
+          + '" title="' + (isPrepared ? 'Hechizo preparado — toca para desmarcar' : 'Sin preparar — toca para preparar') + '">'
+          + (isPrepared ? '✓ Preparado' : '○ Preparar')
+          + '</button>';
+      }
+
+      // Dim unprepared spells
+      var rowStyle = (isPreparer && s.level > 0 && !s._prepared) ? 'opacity:0.5;' : '';
+
+      html += '<div class="char-spell-row" id="csr_' + safeId + '" style="' + rowStyle + '">'
         + '<div class="char-spell-header" onclick="toggleCharSpell(\'' + safeId + '\')">'
         + '<span class="char-spell-toggle">▶</span>'
         + '<span class="char-spell-name">' + s.name + '</span>'
-        + '<span class="char-spell-level"><span class="badge badge-level">' + levelLabel + '</span>' + schoolBadge + concBadge + '</span>'
+        + '<span class="char-spell-level"><span class="badge badge-level">' + levelLabel + '</span>' + schoolBadge + concBadge + ritualBadge + '</span>'
         + '</div>'
         + '<div class="char-spell-body">'
         + '<div class="char-spell-stats">'
-        + '<div class="char-spell-stat"><strong>Tiempo de lanzamiento</strong>' + (s.casting_time || '—') + '</div>'
+        + '<div class="char-spell-stat"><strong>Tiempo</strong>' + (s.casting_time || '—') + '</div>'
         + '<div class="char-spell-stat"><strong>Alcance</strong>' + (s.range || '—') + '</div>'
         + '<div class="char-spell-stat"><strong>Duración</strong>' + (s.duration || '—') + '</div>'
-        + '<div class="char-spell-stat"><strong>Componentes</strong>' + compStr + '</div>'
+        + '<div class="char-spell-stat"><strong>Componentes</strong>' + (comps.join(', ') || '—') + '</div>'
         + '</div>'
         + (s.desc ? '<div class="char-spell-desc">' + s.desc + '</div>' : '<div class="char-spell-desc" style="color:var(--text3);font-style:italic">Sin descripción disponible.</div>')
-        + (s.higher_levels ? '<div class="char-spell-higher"><strong>A niveles superiores</strong>' + s.higher_levels + '</div>' : '')
-        + '<div class="char-spell-footer"><button class="btn-remove" onclick="removeCharSpell(\'' + safeName + '\')">✕ Eliminar</button></div>'
+        + (s.higher_levels ? '<div class="char-spell-higher"><strong>A niveles superiores:</strong> ' + s.higher_levels + '</div>' : '')
+        + '<div class="char-spell-footer">'
+        + prepBtn
+        + '<button class="btn-remove" onclick="removeCharSpell(\'' + safeName + '\')">✕ Eliminar</button>'
+        + '</div>'
         + '</div></div>';
     });
   });
@@ -6849,7 +8572,7 @@ function applyCharToForm() {
   renderCharSpells();
   renderCustomAttacks();
   renderCharFeats();
-  renderSessions();
+  renderJournal();
 
   // Restore death saves
   ['success','failure'].forEach(function(type) {
