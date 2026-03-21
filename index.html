@@ -5449,6 +5449,23 @@ function printCharSheet() {
 }
 
 // ============================================================
+// HISTORIAL DE TIRADAS PERSISTENTE
+// ============================================================
+function saveDiceHistory() {
+  try { localStorage.setItem('dnd5e_dice_history', JSON.stringify(diceHistory)); } catch(e) {}
+}
+
+function loadDiceHistory() {
+  try {
+    var saved = localStorage.getItem('dnd5e_dice_history');
+    if (saved) {
+      diceHistory = JSON.parse(saved);
+      renderDiceHistory();
+    }
+  } catch(e) {}
+}
+
+// ============================================================
 // MODO DM
 // ============================================================
 var DM_PIN_KEY  = 'dnd5e_dm_pin';
@@ -5950,21 +5967,6 @@ function rollWildMagic() {
   if (result) {
     result.innerHTML = '<span style="color:var(--text3);font-size:0.78rem">d100 = ' + (roll+1) + '</span><br>' + WILD_MAGIC[roll];
   }
-}
-
-// ── HISTORIAL DE TIRADAS PERSISTENTE ──────────────────────
-function saveDiceHistory() {
-  try { localStorage.setItem('dnd5e_dice_history', JSON.stringify(diceHistory)); } catch(e) {}
-}
-
-function loadDiceHistory() {
-  try {
-    var saved = localStorage.getItem('dnd5e_dice_history');
-    if (saved) {
-      diceHistory = JSON.parse(saved);
-      renderDiceHistory();
-    }
-  } catch(e) {}
 }
 
 // ── BUSCADOR DE MONSTRUOS ─────────────────────────────────
