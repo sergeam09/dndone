@@ -1858,6 +1858,16 @@ input[type="number"] { text-align: center; }
     <div class="skill-list" id="skills_list"></div>
   </div>
 
+  <p class="section-title">🛡 Resistencias e Inmunidades</p>
+  <div class="card" style="margin-bottom:4px">
+    <div style="font-size:0.75rem;color:var(--text3);margin-bottom:8px">Toca para marcar. Se muestran en combate y en el PDF.</div>
+    <div class="condition-tags" id="resistances_list"></div>
+    <div style="margin-top:10px;display:flex;gap:6px;flex-wrap:wrap;align-items:center">
+      <input type="text" id="custom_resist_input" placeholder="Ej: Psíquico, Encantamiento..." style="flex:1;font-size:0.82rem">
+      <button class="btn-sm" onclick="addCustomResistance()" style="font-size:0.72rem">+ Añadir</button>
+    </div>
+  </div>
+
   <p class="section-title">Condiciones</p>
   <div class="card">
     <!-- Banner de condiciones activas -->
@@ -1887,6 +1897,7 @@ input[type="number"] { text-align: center; }
 
   <p class="section-title">Arma Principal</p>
   <div id="condition_atk_warning" style="display:none;font-size:0.8rem;padding:6px 10px;background:rgba(231,76,60,0.08);border:1px solid rgba(231,76,60,0.3);border-radius:var(--radius);margin-bottom:8px"></div>
+  <div id="resistance_summary_banner" style="display:none;gap:6px;flex-wrap:wrap;align-items:center;padding:5px 10px;background:rgba(41,128,185,0.06);border:1px solid rgba(41,128,185,0.2);border-radius:var(--radius);margin-bottom:8px;font-size:0.72rem;color:var(--text3)"></div>
   <div class="card">
     <div class="inline-row">
       <div class="flex-1">
@@ -3846,6 +3857,114 @@ function applyLevelFeatures() {
 }
 
 // ============================================================
+// RESISTENCIAS E INMUNIDADES
+// ============================================================
+const DAMAGE_TYPES = [
+  { id:'acid',        name:'Ácido',       icon:'🟢' },
+  { id:'cold',        name:'Frío',        icon:'🔵' },
+  { id:'fire',        name:'Fuego',       icon:'🔴' },
+  { id:'lightning',   name:'Rayo',        icon:'⚡' },
+  { id:'thunder',     name:'Trueno',      icon:'💜' },
+  { id:'poison',      name:'Veneno',      icon:'☠' },
+  { id:'necrotic',    name:'Necrótico',   icon:'⚫' },
+  { id:'radiant',     name:'Radiante',    icon:'☀' },
+  { id:'psychic',     name:'Psíquico',    icon:'🧠' },
+  { id:'force',       name:'Fuerza',      icon:'💠' },
+  { id:'bludgeoning', name:'Contundente', icon:'🔨' },
+  { id:'piercing',    name:'Perforante',  icon:'🗡' },
+  { id:'slashing',    name:'Cortante',    icon:'⚔' }
+];
+
+function buildResistances() {
+  var container = document.getElementById('resistances_list');
+  if (!container) return;
+  if (!char.resistances) char.resistances = {};
+  if (!char.custom_resistances) char.custom_resistances = [];
+
+  var html = DAMAGE_TYPES.map(function(dt) {
+    var state = char.resistances[dt.id] || 'none'; // 'none', 'resist', 'immune', 'vuln'
+    var colors = { none:'var(--border2)', resist:'#2980b9', immune:'#5cb85c', vuln:'var(--red2)' };
+    var labels = { none:'', resist:' R', immune:' I', vuln:' V' };
+    var bg     = { none:'var(--bg4)', resist:'rgba(41,128,185,0.15)', immune:'rgba(92,184,92,0.15)', vuln:'rgba(231,76,60,0.15)' };
+    return '<div class="condition-tag" onclick="cycleResistance(\'' + dt.id + '\')" '
+      + 'title="Toca para cambiar: Ninguna → Resistencia → Inmune → Vulnerabilidad" '
+      + 'style="border-color:' + colors[state] + ';background:' + bg[state] + ';color:' + (state === 'none' ? 'var(--text3)' : colors[state]) + '">'
+      + dt.icon + ' ' + dt.name + '<span style="font-size:0.65rem;font-weight:bold">' + labels[state] + '</span>'
+      + '</div>';
+  }).join('');
+
+  // Custom resistances
+  html += char.custom_resistances.map(function(cr, i) {
+    return '<div class="condition-tag" style="border-color:#8e44ad;background:rgba(142,68,173,0.15);color:#8e44ad">'
+      + '✦ ' + cr
+      + ' <span onclick="removeCustomResistance(' + i + ')" style="cursor:pointer;color:#8e44ad;font-size:0.7rem;margin-left:4px">✕</span>'
+      + '</div>';
+  }).join('');
+
+  container.innerHTML = html;
+
+  // Update summary badge in combat tab
+  updateResistanceSummary();
+}
+
+function cycleResistance(id) {
+  if (!char.resistances) char.resistances = {};
+  var states = ['none','resist','immune','vuln'];
+  var cur = char.resistances[id] || 'none';
+  var next = states[(states.indexOf(cur) + 1) % states.length];
+  if (next === 'none') delete char.resistances[id];
+  else char.resistances[id] = next;
+  buildResistances();
+  saveCharacter();
+  var dt = DAMAGE_TYPES.find(function(d){ return d.id === id; });
+  var labels = { none:'sin modificar', resist:'Resistencia', immune:'Inmune', vuln:'Vulnerabilidad' };
+  if (dt) showToast(dt.icon + ' ' + dt.name + ': ' + labels[next]);
+}
+
+function addCustomResistance() {
+  var input = document.getElementById('custom_resist_input');
+  if (!input || !input.value.trim()) return;
+  if (!char.custom_resistances) char.custom_resistances = [];
+  char.custom_resistances.push(input.value.trim());
+  input.value = '';
+  buildResistances();
+  saveCharacter();
+}
+
+function removeCustomResistance(i) {
+  if (!char.custom_resistances) return;
+  char.custom_resistances.splice(i, 1);
+  buildResistances();
+  saveCharacter();
+}
+
+function updateResistanceSummary() {
+  // Show active resistances as a small banner in combat tab
+  var banner = document.getElementById('resistance_summary_banner');
+  if (!banner) return;
+  if (!char.resistances && !char.custom_resistances) { banner.style.display = 'none'; return; }
+
+  var parts = [];
+  var typeLabels = { resist:'R', immune:'I', vuln:'V' };
+  DAMAGE_TYPES.forEach(function(dt) {
+    var s = char.resistances && char.resistances[dt.id];
+    if (s && s !== 'none') {
+      var colors = { resist:'#2980b9', immune:'#5cb85c', vuln:'var(--red2)' };
+      parts.push('<span style="color:' + colors[s] + ';font-size:0.7rem">' + dt.icon + typeLabels[s] + '</span>');
+    }
+  });
+  if (char.custom_resistances) {
+    char.custom_resistances.forEach(function(cr) {
+      parts.push('<span style="color:#8e44ad;font-size:0.7rem">✦' + cr.substring(0,6) + '</span>');
+    });
+  }
+
+  if (!parts.length) { banner.style.display = 'none'; return; }
+  banner.style.display = 'flex';
+  banner.innerHTML = '<span style="font-size:0.65rem;color:var(--text3);margin-right:4px">🛡</span>' + parts.join(' ');
+}
+
+// ============================================================
 // TUTORIAL
 // ============================================================
 var tutorialStep = 1;
@@ -4922,6 +5041,7 @@ function applyRace() {
   saveCharacter();
   showToast('Raza aplicada: ' + r.name + (sr ? ' — ' + sr.name : ''));
   syncRaceBackgroundDisplay();
+  buildResistances();
 }
 
 // ============================================================
@@ -5516,7 +5636,7 @@ var XP_BY_ND = {
   '16':15000,'17':18000,'18':20000,'19':22000,'20':25000
 };
 
-var XP_THRESHOLDS = [
+var ENCOUNTER_XP_THRESHOLDS = [
   [25,50,75,100],[50,100,150,200],[75,150,225,400],
   [125,250,375,500],[250,500,750,1100],[300,600,900,1400],
   [350,750,1100,1700],[450,900,1400,2100],[550,1100,1600,2400],
@@ -5582,7 +5702,7 @@ function calcEncounter() {
   if (players > 5) mult *= 0.5;
 
   var adjustedXP = Math.floor(totalXP * mult);
-  var thresh = XP_THRESHOLDS[lvlIdx];
+  var thresh = ENCOUNTER_XP_THRESHOLDS[lvlIdx];
   var totalThresh = thresh.map(function(t) { return t * players; });
 
   var diff, color;
@@ -6476,6 +6596,18 @@ function toggleActiveTurn(id) {
   renderEncounter();
 }
 
+function moveCreature(id, dir) {
+  var idx = dmData.encounter.findIndex(function(c){ return c.id === id; });
+  if (idx === -1) return;
+  var newIdx = idx + dir;
+  if (newIdx < 0 || newIdx >= dmData.encounter.length) return;
+  var tmp = dmData.encounter[idx];
+  dmData.encounter[idx]    = dmData.encounter[newIdx];
+  dmData.encounter[newIdx] = tmp;
+  renderEncounter();
+  saveDMData();
+}
+
 function removeCreature(id) {
   dmData.encounter = dmData.encounter.filter(function(c){ return c.id !== id; });
   saveDMData();
@@ -6524,6 +6656,10 @@ function renderEncounter() {
       + hpBar
       + '</div>'
       + '<button class="btn-remove" onclick="removeCreature(' + c.id + ')">✕</button>'
+      + '<div style="display:flex;flex-direction:column;gap:2px">'
+      + '<button onclick="moveCreature(' + c.id + ',-1)" style="background:none;border:1px solid var(--border2);color:var(--text3);border-radius:3px;width:18px;height:14px;cursor:pointer;font-size:0.55rem;line-height:1;padding:0" title="Subir">▲</button>'
+      + '<button onclick="moveCreature(' + c.id + ',1)" style="background:none;border:1px solid var(--border2);color:var(--text3);border-radius:3px;width:18px;height:14px;cursor:pointer;font-size:0.55rem;line-height:1;padding:0" title="Bajar">▼</button>'
+      + '</div>'
       + '</div>'
       // Stat block expandable (hidden by default)
       + (hasStats
@@ -6861,7 +6997,7 @@ function openCharacter(id) {
     char.weapon_idx=0; char.attack_attr='str'; char.weapon_prof=false; char.inspiration=false;
     char.skill_profs={}; char.save_profs={}; char.spell_slots_used={};
     char.char_spells=[]; char.custom_attacks=[]; char.inventory=[];
-    char.coins={pp:0,gp:0,ep:0,cp:0}; char.conditions=[]; char.resources={}; char.journal_npcs=[]; char.journal_places=[]; char.journal_quests=[]; char.journal_loot=[];
+    char.coins={pp:0,gp:0,ep:0,cp:0}; char.conditions=[]; char.resources={}; char.journal_npcs=[]; char.journal_places=[]; char.journal_quests=[]; char.journal_loot=[]; char.resistances={}; char.custom_resistances=[];
     char.notes_traits=''; char.notes_features=''; char.notes_general='';
     char.feats=[]; char.applied_race=null; char.applied_bg=null; char.applied_subclass=null;
     char.sessions=[]; char.xp=0; char.concentrating=null; char.portrait=null;
@@ -6888,7 +7024,7 @@ function newCharacter() {
   char.weapon_idx=0; char.attack_attr='str'; char.weapon_prof=false; char.inspiration=false;
   char.skill_profs={}; char.save_profs={}; char.spell_slots_used={};
   char.char_spells=[]; char.custom_attacks=[]; char.inventory=[];
-  char.coins={pp:0,gp:0,ep:0,cp:0}; char.conditions=[]; char.resources={}; char.journal_npcs=[]; char.journal_places=[]; char.journal_quests=[]; char.journal_loot=[];
+  char.coins={pp:0,gp:0,ep:0,cp:0}; char.conditions=[]; char.resources={}; char.journal_npcs=[]; char.journal_places=[]; char.journal_quests=[]; char.journal_loot=[]; char.resistances={}; char.custom_resistances=[];
   char.notes_traits=''; char.notes_features=''; char.notes_general='';
   char.feats=[]; char.applied_race=null; char.applied_bg=null; char.applied_subclass=null;
   char.sessions=[]; char.xp=0; char.concentrating=null; char.portrait=null;
@@ -7222,7 +7358,7 @@ function createGeneratedCharacter() {
   char.weapon_idx=0; char.attack_attr='str'; char.weapon_prof=false; char.inspiration=false;
   char.skill_profs={}; char.save_profs={}; char.spell_slots_used={};
   char.char_spells=[]; char.custom_attacks=[]; char.inventory=[];
-  char.coins={pp:0,gp:0,ep:0,cp:0}; char.conditions=[]; char.resources={}; char.journal_npcs=[]; char.journal_places=[]; char.journal_quests=[]; char.journal_loot=[];
+  char.coins={pp:0,gp:0,ep:0,cp:0}; char.conditions=[]; char.resources={}; char.journal_npcs=[]; char.journal_places=[]; char.journal_quests=[]; char.journal_loot=[]; char.resistances={}; char.custom_resistances=[];
   char.notes_traits=''; char.notes_features=''; char.notes_general='';
   char.feats=[]; char.applied_race=null; char.applied_bg=null; char.applied_subclass=null;
   char.sessions=[]; char.xp=0; char.concentrating=null; char.portrait=null;
@@ -7319,6 +7455,7 @@ window.addEventListener('DOMContentLoaded', function() {
   buildSavingThrows();
   buildDeathSaves();
   buildConditions();
+  buildResistances();
   buildSkillRollButtons();
   buildSaveRollButtons();
   setupTabs();
@@ -8590,6 +8727,7 @@ function applyCharToForm() {
   renderConcentration();
   applyPortrait(char.portrait || null);
   syncRaceBackgroundDisplay();
+  buildResistances();
 }
 
 // ============================================================
